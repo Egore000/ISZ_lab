@@ -41,28 +41,39 @@ class Filer:
     
 
 class Grapher:
-    def __init__(self, custom_rcParams=None):
+    def __init__(self, custom_rcParams=None, projection='3d'):
         if custom_rcParams:
             plt.rcParams.update(custom_rcParams)
         self.fig = plt.figure(figsize=(8,6), dpi=80)
-        self.ax = self.fig.add_subplot(1, 1, 1, projection='3d')
+        self.projection = projection
+        self.ax = self.fig.add_subplot(1, 1, 1, projection=projection)
 
     def print(self, data, **kwargs):
-        try:
-            x, y, z = zip(*data)
-            self.ax.plot(x, y, z, **kwargs)
-        except TypeError:
-            x, y, z = data
-            self.ax.scatter(x, y, z,**kwargs)
-    
+        if self.projection == '3d':
+            try:
+                x, y, z = zip(*data)
+                self.ax.plot(x, y, z, **kwargs)
+            except TypeError:
+                x, y, z = data
+                self.ax.scatter(x, y, z,**kwargs)
+        
+            self.ax.set_xlabel('x, км')
+            self.ax.set_ylabel('y, км')
+            self.ax.set_zlabel('z, км')
+            self.ax.set_xlim(-40000, 40000)
+            self.ax.set_ylim(-40000, 40000)
+            self.ax.set_zlim(-40000, 40000)
+            self.ax.set_aspect('equal', adjustable='box')
+        else: 
+            lmd, phi = zip(*data)
+            lmd = list(map(lambda x: x.decimal, lmd))
+            phi = list(map(lambda x: x.decimal, phi))
+
+            self.ax.scatter(lmd, phi, **marker)
+            self.ax.set_xlabel('$\lambda, °$')
+            self.ax.set_ylabel('$\phi, °$')
         self.fig.suptitle(kwargs.get('title', ''))
-        self.ax.set_xlabel('x, км')
-        self.ax.set_ylabel('y, км')
-        self.ax.set_zlabel('z, км')
-        self.ax.set_xlim(-40000, 40000)
-        self.ax.set_ylim(-40000, 40000)
-        self.ax.set_zlim(-40000, 40000)
-        self.ax.set_aspect('equal', adjustable='box')
+
 
     def show(self):
         plt.show()

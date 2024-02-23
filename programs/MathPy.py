@@ -102,7 +102,6 @@ class Math:
         t = (d + m)/jdyear
         mm = m * 86400
         s = (24110.54841 + mm + 236.555367908 * (d + m) + (0.093104 * t - 6.21E-6 * t**2) * t) / 86400 * 2*np.pi
-        s = Angles(rad=s).reduce()
         return s
     
     @staticmethod

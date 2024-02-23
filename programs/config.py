@@ -1,25 +1,27 @@
 from AnglesPy import Angles
 
-date = '22.02.2024 23:00'
+date = '23.02.2024 18:30'
 
-# elements
-a = 42169.14              # km
-e = 0
-i = Angles(10, 0, 0)    # grad
-T = 24 * 86164/86400                 # h
-Omega = Angles(0)      # grad
-w = Angles(0)          # grad
-M0 = Angles(0)         # grad
-
-# # elements
-# a = 42165              # km
-# e = 0.001
-# i = Angles(1, 0, 0)    # grad
-# T = 24                 # h
-# Omega = Angles(0)      # grad
-# w = Angles(0)          # grad
-# M0 = Angles(0)         # grad
-
+parameters = {
+    'Тестовый': {
+        'a': 42169.14,
+        'e': 0,
+        'i': Angles(10, 0, 0),
+        'T': 86164,
+        'Omega': Angles(0),
+        'w': Angles(0),
+        'M0': Angles(0),
+    },
+    'Геостационарный': {
+        'a': 42165,
+        'e': 0.001,
+        'i': Angles(1, 0, 0),
+        'T': 86400,
+        'Omega': Angles(0),
+        'w': Angles(0),
+        'M0': Angles(0),
+    }
+}
 
 # accuracy
 eps = 1e-13
@@ -33,10 +35,18 @@ T0 = 2456514.5          # s
 
 # graph parameters
 custom_rcParams = {
-    'font.size': 8,
+    'font.size': 10,
     'lines.linewidth': 0.7,
     'lines.color': 'black',
-    'font.family': 'Times New Roman'
+    'font.family': 'Times New Roman',
+    'mathtext.fontset': 'custom',
+    'mathtext.it': 'Times New Roman:italic',
+}
+
+marker = {
+    'c': 'k',
+    's': 50,
+    'marker': '.'
 }
 
 # file paths
