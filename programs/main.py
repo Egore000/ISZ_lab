@@ -6,7 +6,14 @@ from mechanics import *
 
 
 class Satellite:
-    def __init__(self, type: str, t=T0):
+    '''
+    Искусственный спутник
+
+    Параметры:
+    ------
+        `type`: `str` - тип спутника
+    '''
+    def __init__(self, type: str, t0=0):
         # Elements
         self.a = parameters[type]['a']
         self.e = parameters[type]['e']
@@ -15,23 +22,28 @@ class Satellite:
         self.Omega = parameters[type]['Omega']
         self.M0 = parameters[type]['M0']
         self.T = parameters[type]['T']
-        self.t0 = T0
+
+        self.t0 = t0
         self.n = sqrt(Mechanics.Mu / self.a ** 3)
-        # Coords
-        self.orbital_coords, self.orbital_velocities = Mechanics.get_orbital_coords(self, t)
-        self.coords, self.velocities = Mechanics.get_coords(self, t)
+        # Initial coords
+        self.orbital_coords, self.orbital_velocities = Mechanics.get_orbital_coords(self, t0)
+        self.coords, self.velocities = Mechanics.get_coords(self, t0)
 
     def evolution(self):
         '''Эволюция динамики за период обращения'''
-        t = self.t0
         dt = 0.01 * self.T # c
+        t = self.t0
         coords = []
         while t <= self.t0 + self.T:
-            coords.append((t, Mechanics.get_coords(self, t)[0]))
+            self.coords, self.velocities = Mechanics.get_coords(self, t)
+            coords.append((t, self.coords))
             t += dt
         return coords
 
     def route(self, date: str):
+        '''
+        Трасса спутника
+        '''
         jd = Math.get_JD(date)      # Юлианская дата
         (_, _, t0) = Math.get_daytime(date)    
         t0 -= int(t0) 
@@ -55,7 +67,7 @@ class Satellite:
 
 def orbit(type: str):
     earth = Earth(EARTH_PATH)
-    satellite = Satellite(type=type)
+    satellite = Satellite(type=type, t0=1e14)
     evolution = satellite.evolution()
 
     time, evolution = zip(*evolution)
@@ -63,6 +75,7 @@ def orbit(type: str):
     grapher = Grapher(custom_rcParams, projection='3d')
     grapher.print(evolution, c='black')
     grapher.print(earth.coords)
+    print(satellite.coords)
     grapher.print(satellite.coords, c='red', s=10)
     grapher.fig.suptitle(type + ' спутник')
     grapher.show()
@@ -79,6 +92,6 @@ def route(type: str):
 
 if __name__=="__main__":
     # route('Тестовый')
-    # orbit('Тестовый')
-    route('Геостационарный')
-    orbit('Геостационарный')
+    orbit('Тестовый')
+    # route('Геостационарный')
+    # orbit('Геостационарный')

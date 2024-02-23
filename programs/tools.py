@@ -4,7 +4,7 @@ from config import *
 
 
 class Earth:
-    Mass = MASS
+    Mass = 2e24
     Radius = 6378
     def __init__(self, file: str):
         self.coords = Filer.read(file)
@@ -41,6 +41,9 @@ class Filer:
     
 
 class Grapher:
+    '''
+    Класс для построения графиков
+    '''
     def __init__(self, custom_rcParams=None, projection='3d'):
         if custom_rcParams:
             plt.rcParams.update(custom_rcParams)
@@ -73,7 +76,6 @@ class Grapher:
             self.ax.set_xlabel('$\lambda, °$')
             self.ax.set_ylabel('$\phi, °$')
         self.fig.suptitle(kwargs.get('title', ''))
-
 
     def show(self):
         plt.show()

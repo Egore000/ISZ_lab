@@ -8,8 +8,8 @@ from tools import Filer, Earth
 
 class Mechanics:
     '''Класс для работы с формулами из небесной механики'''
-    Mu = MU
-    f = G
+    Mu = 3.986004418E5
+    f = 6.67e-17            # H * km**2 / kg**2
     w = 7.2922115e-5 # скорость среднего звёздного вращения Земли
 
     def get_elements(self, coords: list, velocities: list):
@@ -78,7 +78,7 @@ class Mechanics:
         M = satellite.n * (t - satellite.t0) + satellite.M0
         dif = 1
         E0 = M
-        while abs(dif) > eps:
+        while abs(dif) > 1e-13:
             E = M + satellite.e * sin(E0)
             dif = E - E0
             E0 = E

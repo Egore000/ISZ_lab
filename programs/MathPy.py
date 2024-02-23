@@ -22,7 +22,6 @@ class Math:
     def LPn(n: int, z: float) -> float:
         '''
         Функция Лежандра `Pn(z)`
-
         ```
         -1 <= z <= 1
         ```
@@ -39,7 +38,6 @@ class Math:
     def LPnm(n: int, m: int, z: float) -> float:
         '''
         Присоединённая функция Лежандра `Pnm(z)`
-        
         ```
         -1 <= z <= 1
         ```
@@ -65,7 +63,6 @@ class Math:
     def Norm_LPnm(n: int, m: int, z: float) -> float:
         '''
         Нормированная функция Лежандра 
-
         ```
         -1 <= z <= 1
         ```
@@ -92,7 +89,7 @@ class Math:
     @staticmethod
     def sid2000(jd: float) -> float:
         '''
-        Вычисление sid2000
+        Вычисление звёздного времени sid2000
             `jd` - юлианская дата
         '''
         jd2000 = 2451545
@@ -129,12 +126,14 @@ class Math:
     
     @staticmethod
     def get_daytime(date: str) -> tuple[int, int, float]:
+        '''
+        Приведение даты в строков формате к виду `(year, month, day)`
+            `year`: `int`
+            `month`: `int`
+            `day`: `float`
+        '''
         date, time = date.split()
         day, month, year = map(int, date.split('.'))
         hour, min = map(int, time.split(':'))
         day += (hour + min/60)/24
         return (year, month, day)
-
-
-# from config import date
-# print(Math.get_JD('01.01.2000 00:00'))
