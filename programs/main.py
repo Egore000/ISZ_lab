@@ -1,6 +1,5 @@
 from math import sqrt
 import numpy as np
-from matplotlib.animation import FuncAnimation
 
 from config import *
 from tools import *
@@ -96,13 +95,13 @@ def animation(type: str):
     satellite = Satellite(type=type)
     earth = Earth(EARTH_PATH)
     grapher = Grapher(projection='3d')
-    grapher.animation(satellite, earth)
+    grapher.animation(satellite, earth, save=0, title='Резонанс')
 
 
 if __name__=="__main__":
     # route('Тестовый')
     # orbit('Тестовый')
-    animation('Тестовый')
-    # route('Геостационарный')
-    # orbit('Геостационарный')
-    # animation('Геостационарный')
+    # animation('Тестовый')
+    route('Геостационарный')
+    orbit('Геостационарный')
+    animation('Геостационарный')
