@@ -1,4 +1,6 @@
+import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 from config import * 
 
@@ -19,8 +21,8 @@ class Filer:
         with open(file, 'r') as f:
             for line in f:
                 line_filtered = [float(x) for x in line.strip().split(' ') if x != '']
-                data.append(line_filtered)
-        return data
+                data.append(np.array(line_filtered))
+        return np.array(data)
 
     @staticmethod
     def read_coefficients(path):
@@ -54,12 +56,11 @@ class Grapher:
     def print(self, data, **kwargs):
         if self.projection == '3d':
             try:
-                x, y, z = zip(*data)
-                self.ax.plot(x, y, z, **kwargs)
-            except TypeError:
-                x, y, z = data
-                self.ax.scatter(x, y, z,**kwargs)
-        
+                self.ax.plot(data[0, :], data[1, :], data[2, :], **kwargs)
+            except IndexError:
+                self.ax.scatter(data[0], data[1], data[2], **kwargs)
+
+
             self.ax.set_xlabel('x, км')
             self.ax.set_ylabel('y, км')
             self.ax.set_zlabel('z, км')
@@ -76,6 +77,38 @@ class Grapher:
             self.ax.set_xlabel('$\lambda, °$')
             self.ax.set_ylabel('$\phi, °$')
         self.fig.suptitle(kwargs.get('title', ''))
+
+    @staticmethod
+    def update(N, data, line, point):
+        point._offsets3d = (data[0, N:(N+1)], data[1, N:(N+1)], data[2, N:(N+1)])
+        line.set_data(data[:2, :N])
+        line.set_3d_properties(data[2, :N])
+
+    def animation(self, satellite, earth, **kwargs):
+        data = np.array(list(satellite.evolution())).T
+
+        self.ax.plot(*zip(*earth.coords))
+        point = self.ax.scatter(data[0, 0:1], data[1, 0:1], data[2, 0:1], c='red')
+        line, = self.ax.plot(data[0, 0:1], data[1, 0:1], data[2, 0:1], color='k') 
+        
+        self.ax.set_xlim3d([-40000.0, 40000.0])
+        self.ax.set_xlabel('x. км')
+
+        self.ax.set_ylim3d([-40000.0, 40000.0])
+        self.ax.set_ylabel('y, км')
+
+        self.ax.set_zlim3d([-40000.0, 40000.0])
+        self.ax.set_zlabel('z, км')
+        self.ax.set_aspect('equal', adjustable='box')
+
+        self.fig.suptitle(satellite.type + ' спутник')
+
+        N = 100
+        ani = FuncAnimation(self.fig, self.update, N, fargs=(data, line, point), interval=1500/N, blit=False)
+        if kwargs.get('save'):
+            ani.save(f'animations/{satellite.type}-anim.gif', writer='imagemagick')
+        plt.show()
+
 
     def show(self):
         plt.show()
