@@ -3,13 +3,39 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from config import * 
+from MathPy import *
+
+
+class Object:
+    def __init__(self, coords: tuple):
+        self.coords = coords
+
+    def disturbing_function(self, satellite):
+        (x, y, z) = satellite.coords
+        (x_, y_, z_) = self.coords
+
+        dx = (x-x_, y-y_, z-z_)
+        r_ = Math.radius(self.coords)
+        delta = Math.radius(dx)
+
+        return self.fm * (1 / delta - (x*x_ + y*y_ + z*z_) / r_**3)
 
 
 class Earth:
     Mass = 2e24
     Radius = 6378
+    fm = 398600.5
     def __init__(self, file: str):
         self.coords = Filer.read(file)
+
+
+class Sun(Object):
+    fm = 332946.04877304828 * Earth.fm
+    
+
+class Moon(Object):
+    fm = Earth.fm / 81.30056822149722
+    
 
 
 class Filer:

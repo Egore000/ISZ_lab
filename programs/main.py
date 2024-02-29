@@ -98,10 +98,38 @@ def animation(type: str):
     grapher.animation(satellite, earth, save=0, title='Резонанс')
 
 
+def disturb():
+    sun = Sun((
+             -1.848432950986775E-01 * Mechanics.ae, 
+              8.860598024929441E-01 * Mechanics.ae, 
+              3.841027854355354E-01 * Mechanics.ae
+              ))
+
+    moon = Moon((
+                (-1.863831425711169E-01 + 1.848432950986775E-01) * Mechanics.ae,
+                ( 8.878791230277183E-01 - 8.860598024929441E-01) * Mechanics.ae,
+                ( 3.850801888852833E-01 - 3.841027854355354E-01) * Mechanics.ae
+                ))
+    
+    satellite = Satellite(type='Тестовый')
+    satellite.coords = (-20710.0198816410957026,
+                         13917.1445923690977837,
+                          5402.62160300007461444)
+
+    U = Earth.fm / Math.radius(satellite.coords)
+
+    print(f'Geopotential:   U = {U}')
+    print(f'R (Sun):    {sun.disturbing_function(satellite) / U}')
+    print(f'R (Moon):   {moon.disturbing_function(satellite) / U}')
+
+
+
 if __name__=="__main__":
     # route('Тестовый')
     # orbit('Тестовый')
     # animation('Тестовый')
-    route('Геостационарный')
-    orbit('Геостационарный')
-    animation('Геостационарный')
+    # route('Геостационарный')
+    # orbit('Геостационарный')
+    # animation('Геостационарный')
+
+    disturb()

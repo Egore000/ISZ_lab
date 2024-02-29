@@ -10,8 +10,8 @@ class Mechanics:
     '''Класс для работы с формулами из небесной механики'''
     Mu = 3.986004418E5
     f = 6.67e-17            # H * km**2 / kg**2
-    w = 7.2922115e-5 # скорость среднего звёздного вращения Земли
-
+    w = 7.2922115e-5        # скорость среднего звёздного вращения Земли
+    ae = 149_597_870.7        # km
     def get_elements(self, coords: list, velocities: list):
         '''
         Переход от координат и скоростей к элементам орбиты
@@ -133,7 +133,7 @@ class Mechanics:
 
         coefs = Filer.read_coefficients(COEFS)
 
-        coef = Mechanics.Mu * Earth.Mass / r0
+        coef = Earth.fm / r
 
         sum = 0
         for n in range(n1, n2 + 1):
