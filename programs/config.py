@@ -25,7 +25,7 @@ parameters = {
 
 # graph parameters
 custom_rcParams = {
-    'font.size': 10,
+    'font.size': 14,
     'lines.linewidth': 0.7,
     'lines.color': 'black',
     'font.family': 'Times New Roman',
