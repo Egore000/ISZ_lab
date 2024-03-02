@@ -1,6 +1,6 @@
 from AnglesPy import Angles
 
-date = '23.10.2024 18:30'
+date = '02.03.2024 11:00'
 
 parameters = {
     'Тестовый': {

@@ -130,6 +130,6 @@ if __name__=="__main__":
     # animation('Тестовый')
     # route('Геостационарный')
     # orbit('Геостационарный')
-    # animation('Геостационарный')
+    animation('Геостационарный')
 
-    disturb()
+    # disturb()

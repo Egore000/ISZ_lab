@@ -152,6 +152,9 @@ class Grapher:
             lmd = list(map(lambda x: x.decimal, lmd))
             phi = list(map(lambda x: x.decimal, phi))
 
+            if kwargs.get('limit_180'):
+                self.ax.set_xlim(-180, 180)
+                self.ax.set_ylim(-90, 90)
             self.ax.scatter(lmd, phi, **marker)
             self.ax.set_xlabel('$\lambda, °$')
             self.ax.set_ylabel('$\phi, °$')
