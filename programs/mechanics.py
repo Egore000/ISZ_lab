@@ -4,7 +4,17 @@ import numpy as np
 from AnglesPy import Angles
 from MathPy import Math
 from config import * 
-from tools import Filer, Earth
+from tools import Filer
+
+
+class Earth:
+    Mass = 2e24
+    Radius = 6378
+    fm = 398600.5
+    def __init__(self, file: str):
+        self.coords = Filer.read(file)
+
+
 
 class Mechanics:
     '''Класс для работы с формулами из небесной механики'''

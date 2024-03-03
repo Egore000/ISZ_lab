@@ -1,69 +1,10 @@
-from math import sqrt
 import numpy as np
 
 from config import *
-from tools import *
-from mechanics import *
-
-
-class Satellite:
-    '''
-    Искусственный спутник
-
-    Параметры:
-    ------
-        `type`: `str` - тип спутника
-    '''
-    def __init__(self, type: str, t0=0):
-        self.type = type
-        # Elements
-        self.a = parameters[type]['a']
-        self.e = parameters[type]['e']
-        self.i = parameters[type]['i']
-        self.w = parameters[type]['w']
-        self.Omega = parameters[type]['Omega']
-        self.M0 = parameters[type]['M0']
-        self.T = parameters[type]['T']
-
-        self.t0 = t0
-        self.n = sqrt(Mechanics.Mu / self.a ** 3)
-        # Initial coords
-        self.orbital_coords, self.orbital_velocities = Mechanics.get_orbital_coords(self, t0)
-        self.coords, self.velocities = Mechanics.get_coords(self, t0)
-
-    def evolution(self):
-        '''Эволюция динамики за период обращения'''
-        dt = 0.01 * self.T # c
-        t = self.t0
-        while t <= self.t0 + self.T:
-            self.coords, self.velocities = Mechanics.get_coords(self, t)
-            x, y, z = self.coords
-            yield np.array([x, y, z])
-            t += dt
-
-    def route(self, date: str):
-        '''
-        Трасса спутника
-        '''
-        jd = Math.get_JD(date)      # Юлианская дата
-        (_, _, t0) = Math.get_daytime(date)    
-        t0 -= int(t0) 
-        t0 *= 86400
-
-        dt = 0.01 * self.T
-        t = 0
-        coords = []
-        while t < self.T:
-            H0 = Math.sid2000(jd + t/86400)         
-            H = H0 + Mechanics.w * t0
-
-            x, v = Mechanics.get_coords(self, t)
-            x = np.array(x)
-            y = Mechanics.transition(H, x)
-            coords.append(Math.get_lmd_phi(y))
-            t += dt
-        return coords
-
+from tools import Filer, Grapher, Parser
+from mechanics import Mechanics
+from MathPy import Math
+from objects import Satellite, Earth, Sun, Moon
 
 
 def orbit(type: str):
