@@ -26,27 +26,27 @@ class Mechanics:
         ------
         `(ecc, i, a, Omega, w, M)`
         '''
-        x, y, z = coords[0], coords[1], coords[2]
-        Vx, Vy, Vz = velocities[0], velocities[1], velocities[2]
+        x, y, z = coords
+        Vx, Vy, Vz = velocities
 
-        r = sqrt(x**2 + y**2 + z**2)
-        V2 = Vx**2 + Vy**2 + Vz**2
-        h = V2/2 - self.Mu/r
+        r = Math.radius(coords)
+        V2 = Math.radius(velocities)
+        h = V2 / 2 - self.Mu / r
         
-        c1 = y*Vz - z*Vy
-        c2 = z*Vx - x*Vz 
-        c3 = x*Vy - y*Vx 
+        c1 = y * Vz - z * Vy
+        c2 = z * Vx - x * Vz 
+        c3 = x * Vy - y * Vx 
 
-        l1 = -self.Mu*x/r + Vy*c3 - Vz*c2
-        l2 = -self.Mu*y/r + Vz*c1 - Vx*c3
-        l3 = -self.Mu*z/r + Vx*c2 - Vy*c1
+        l1 = -self.Mu * x/r + Vy * c3 - Vz * c2
+        l2 = -self.Mu * y/r + Vz * c1 - Vx * c3
+        l3 = -self.Mu * z/r + Vx * c2 - Vy * c1
 
-        c = sqrt(c1**2 + c2**2 + c3**2)
-        l = sqrt(l1**2 + l2**2 + l3**2)
+        c = Math.radius((c1, c2, c3))
+        l = Math.radius((l1, l2, l3))
 
-        a = -self.Mu/(2*h)
-        ecc = l/self.Mu
-        i = np.arctan2(sqrt(1 - c3**2/c**2), c3/c)
+        a = -self.Mu / (2 * h)
+        ecc = l / self.Mu
+        i = np.arctan2(sqrt(1 - c3**2 / c**2), c3 / c)
 
         if i == 0:
             i += 1e-12
@@ -127,6 +127,14 @@ class Mechanics:
     @staticmethod
     def geopotential(coords: tuple[float], 
                      n1: int, n2: int) -> float:
+        '''
+        Вычисление геопотенциала в заданной точке `coords` с учётом
+        влияния гармоник геопотенциала 
+        
+        `n1` - начальная гармоника
+
+        `n2` - конечная гармоника
+        '''
         r0 = Earth.Radius
         lmd, phi = Math.get_lmd_phi(coords)
         r = Math.radius(coords)

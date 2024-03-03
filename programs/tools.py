@@ -1,6 +1,12 @@
+import os
+from datetime import datetime, timezone, timedelta
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+
+import requests
+import json
 
 from config import * 
 from MathPy import *
@@ -46,7 +52,7 @@ class Filer:
         data = []
         with open(file, 'r') as f:
             for line in f:
-                line_filtered = [float(x) for x in line.strip().split(' ') if x != '']
+                line_filtered = [float(x) for x in line.split()]
                 data.append(np.array(line_filtered))
         return np.array(data)
 
@@ -68,58 +74,9 @@ class Filer:
         return array
     
     @staticmethod
-    def read_file(path) -> tuple[list[float] | float]:
-        '''
-        Чтение данных из path
-
-        Возрвращает следующие данные::
-        -----------
-            `time` - время
-
-            `coords` - координаты
-            
-            `velocities` - скорости
-            
-            `megno` - параметр MEGNO
-            
-            `mean_megno` - осреднённый MEGNO
-            
-            `data` - даты наблюдений
-        '''
-        time = []
-        date = []
-        coords = []
-        velocities = []
-        lines = []
-        megno = []
-        mean_megno = []
-        with open(path, 'r') as data:
-            for line in data:
-                line = line.strip().split(' ')
-                line_clear = [x for x in line if x != '']
-                lines.append(line_clear)
-            
-            for i in range(0, len(lines), 3):
-                line1 = lines[i]
-                line2 = lines[i+1]
-                line3 = lines[i+2]
-            
-                time.append(float(line1[1])/(86400*365))
-                date.append((int(line1[3]), int(line1[4]), int(line1[5])))
-                
-                x = float(line2[1])
-                y = float(line2[2])
-                z = float(line2[3])
-                megno.append(float(line2[4]))
-
-                Vx = float(line3[0])
-                Vy = float(line3[1])
-                Vz = float(line3[2])
-                mean_megno.append(float(line3[3]))
-
-                coords.append(np.array([x, y ,z]))
-                velocities.append((Vx, Vy, Vz))
-        return np.array(coords)
+    def write(path: str, data: str):
+        with open(path, 'w', encoding='UTF-8') as file:
+            file.write(data)
 
 
 class Grapher:
@@ -188,6 +145,120 @@ class Grapher:
             ani.save(f'animations/{kwargs.get("title", satellite.type)}-anim.gif', writer='imagemagick')
         plt.show()
 
+    def current_position(self, **kwargs):
+        parser = Parser()
+        result = parser.get_current_position()
+        lmd, phi = zip(*result.values())
+        text = list(result.keys())
+
+        self.ax.scatter(lmd, phi, **marker)
+        self.ax.set_xlabel('$\lambda, °$')
+        self.ax.set_ylabel('$\phi, °$')
+        
+        for i in range(len(lmd)):
+            plt.annotate(text[i], (lmd[i], phi[i] + 2))
+
+        self.ax.set_title(f'{datetime.now()}')
 
     def show(self):
         plt.show()
+
+
+class Parser:
+    '''
+    Класс для сбора данных о группировке ГЛОНАСС с сайта https://glonass-iac.ru/
+    '''
+    url = 'https://glonass-iac.ru/glonass/ephemeris/ephemeris_json.php'
+    current_pos_url = 'https://glonass-iac.ru/glonass/currentPosition/getsatpos_iac.php'
+    headers = {
+        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"
+        }
+
+    def get_response(self, url):
+        '''
+        Отправка запроса на сервер
+        '''
+        try:
+            response = requests.get(url=url, 
+                                    headers=self.headers)
+            return response
+        except requests.exceptions.HTTPError as error:
+            print(f'Ошибка: {error}')
+
+    def get_response_from_file(self, path: str) -> dict:
+        '''
+        Получение данных из сохранённого `path.json` файла
+        '''
+        with open(path, 'r', encoding='UTF-8') as f:
+            response = json.load(f)
+        return response
+
+    def write_to_file(self, data: dict, path: str):
+        '''
+        Запись `data` в `path.json` файл 
+        '''
+        with open(path, 'w', encoding='UTF-8') as f:
+            json.dump(data, f)
+
+    def __get_data(self, data):
+        '''
+        Приведение данных `data` к нужным типам
+        '''
+        result = {}
+        for dict_ in data:
+            dict_.pop('name')
+            dict_.pop('color')
+            dict_['Tomega'] = float(dict_['Tomega'])
+            dict_['Tapp'] = float(dict_['Tapp'])
+            dict_['e'] = float(dict_['e'])
+            dict_['i'] = float(dict_['i'])
+            dict_['Lomega'] = float(dict_['Lomega'])
+            dict_['W'] = float(dict_['W'])
+            dict_['deltaT2'] = float(dict_['deltaT2'])
+            dict_['nl'] = int(dict_['nl'])
+            dict_['deltaT'] = float(dict_['deltaT'])
+
+            result[dict_.pop('ns')] = dict_
+    
+        return result
+
+    def parse_data(self):
+        '''
+        Основная функция для парсинга данных с сайта
+        '''
+        timezone_offset = -7
+        tzinfo = timezone(timedelta(hours=timezone_offset))
+
+        path = f'files/{datetime.now(tz=tzinfo).date()}.json'
+        if not os.path.exists(path):
+            response = self.get_response(self.url)
+            data = response.json()
+            result = self.__get_data(data)
+            self.write_to_file(result, path)
+        else:
+            result = self.get_response_from_file(path)
+
+        for sat, data in result.items():
+            result[sat]['i'] = Angles(decimal=result[sat]['i'])
+            result[sat]['W'] = Angles(decimal=result[sat]['W'])
+            result[sat]['Lomega'] = Angles(decimal=result[sat]['Lomega'])
+        return result
+
+    def get_current_position(self):
+        response = self.get_response(self.current_pos_url)
+        data = response.json()
+        
+        result = {}
+        for item in data:
+            if item['lon'] > 180:
+                item['lon'] = item['lon'] - 360
+            result[item['point']] = (item['lon'], item['lat'])
+        return result
+
+
+if __name__=='__main__':
+    parser = Parser()
+    # print(parser.parse_data())
+    grapher = Grapher(custom_rcParams, None)
+    grapher.current_position()
+    grapher.show()
