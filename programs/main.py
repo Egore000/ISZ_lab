@@ -63,6 +63,7 @@ def disturb():
     print(f'R (Sun):    {sun.disturbing_function(satellite) / U}')
     print(f'R (Moon):   {moon.disturbing_function(satellite) / U}')
 
+
 def triangulation():
     point1 = Point((-3811.723938399338, -2775.741899662411, -3286.0884872272504))
     point2 = Point((225.87627253590838, 5477.069490937063, 2938.8013951824414))
@@ -73,9 +74,11 @@ def triangulation():
     delta1 = Angles(decimal=34.908846560020685)
     delta2 = Angles(decimal=-28.159853782057976)
 
-    (x1, y1, z1), (x2, y2, z2) = Math.Triangulate.get_coords(point1, point2,
-                                                            gamma1, delta1, 
-                                                            gamma2, delta2)
+    triang = Math.Triangulate(point1, point2,
+                            gamma1, delta1, 
+                            gamma2, delta2)
+    (x1, y1, z1), (x2, y2, z2) = triang.get_coords()
+    
     print(f'x\'={x1}        x"={x2}')
     print(f'y\'={y1}        y"={y2}')
     print(f'z\'={z1}        z"={z2}')
