@@ -1,4 +1,5 @@
 import numpy as np
+from math import cos, sin
 
 from AnglesPy import Angles
 
@@ -137,3 +138,51 @@ class Math:
         hour, min = map(int, time.split(':'))
         day += (hour + min/60)/24
         return (year, month, day)
+    
+    class Triangulate:
+        @staticmethod
+        def get_components(gamma: Angles, delta: Angles) -> tuple[float]:
+            l = cos(gamma) * cos(delta)
+            m = sin(gamma) * cos(delta)
+            n = sin(delta)
+            return (l, m, n)
+        
+        @staticmethod
+        def get_alpha(g1: Angles, d1: Angles, 
+                        g2: Angles, d2: Angles) -> tuple[float]:
+            l1, m1, n1 = Math.Triangulate.get_components(gamma=g1, delta=d1)
+            l2, m2, n2 = Math.Triangulate.get_components(gamma=g2, delta=d2)
+
+            cos_aplha = l1 * l2 + m1 * m2 + n1 * n2
+            sin_alpha = np.sqrt(1 - cos_aplha ** 2)
+
+            return (cos_aplha, sin_alpha)
+        
+        @staticmethod
+        def get_coords(point1, point2, g1, d1, g2, d2) -> tuple[float]:
+            x1, y1, z1 = point1.coords
+            x2, y2, z2 = point2.coords
+
+            dx, dy, dz = x2-x1, y2-y1, z2-z1
+
+            l1, m1, n1 = Math.Triangulate.get_components(g1, d1)
+            l2, m2, n2 = Math.Triangulate.get_components(g2, d2)
+
+            F1 = dx*l1 + dy*m1 + dz*n1
+            F2 = dx*l2 + dy*m2 + dz*n2
+
+            cos_a, sin_a = Math.Triangulate.get_alpha(g1, d1, g2, d2)
+
+            rho1 = (F1 - F2*cos_a) / sin_a**2
+            rho2 = (F1*cos_a - F2) / sin_a**2
+
+            x1 = point1.x + rho1 * l1
+            x2 = point2.x + rho2 * l2
+
+            y1 = point1.y + rho1 * m1
+            y2 = point2.y + rho2 * m2
+
+            z1 = point1.z + rho1 * n1
+            z2 = point2.z + rho2 * n2
+
+            return (x1, y1, z1), (x2, y2, z2)

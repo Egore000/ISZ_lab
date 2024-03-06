@@ -4,7 +4,7 @@ from config import *
 from tools import Filer, Grapher, Parser
 from mechanics import Mechanics
 from MathPy import Math
-from objects import Satellite, Earth, Sun, Moon
+from objects import Satellite, Earth, Sun, Moon, Point
 
 
 def orbit(type: str):
@@ -63,14 +63,32 @@ def disturb():
     print(f'R (Sun):    {sun.disturbing_function(satellite) / U}')
     print(f'R (Moon):   {moon.disturbing_function(satellite) / U}')
 
+def triangulation():
+    point1 = Point((-3811.723938399338, -2775.741899662411, -3286.0884872272504))
+    point2 = Point((225.87627253590838, 5477.069490937063, 2938.8013951824414))
+    
+    gamma1 = Angles(decimal=36.046824810480096) 
+    gamma2 = Angles(decimal=267.635619629101)
+
+    delta1 = Angles(decimal=34.908846560020685)
+    delta2 = Angles(decimal=-28.159853782057976)
+
+    (x1, y1, z1), (x2, y2, z2) = Math.Triangulate.get_coords(point1, point2,
+                                                            gamma1, delta1, 
+                                                            gamma2, delta2)
+    print(f'x\'={x1}        x"={x2}')
+    print(f'y\'={y1}        y"={y2}')
+    print(f'z\'={z1}        z"={z2}')
 
 
 if __name__=="__main__":
     # route('Тестовый')
     # orbit('Тестовый')
     # animation('Тестовый')
-    route('Геостационарный')
+    # route('Геостационарный')
     # orbit('Геостационарный')
     # animation('Геостационарный')
 
     # disturb()
+
+    triangulation()

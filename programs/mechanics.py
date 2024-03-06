@@ -160,3 +160,11 @@ class Mechanics:
                 sum += (r0/r) ** (n + 1) * Math.Norm_LPnm(n, m, sin(phi))\
                      * (Cnm * cos(m * lmd) + Snm * sin(m * lmd))
         return coef * sum
+    
+    @staticmethod
+    def TRS(satellite, H: float, t: float):
+        x, v = Mechanics.get_coords(satellite, t)
+        x = np.array(x)
+        y = Mechanics.transition(H, x)
+        return y
+

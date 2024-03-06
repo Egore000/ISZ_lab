@@ -112,21 +112,6 @@ class Grapher:
             ani.save(f'animations/{kwargs.get("title", satellite.type)}-anim.gif', writer='imagemagick')
         plt.show()
 
-    def current_position(self, **kwargs):
-        parser = Parser()
-        result = parser.get_current_position()
-        lmd, phi = zip(*result.values())
-        text = list(result.keys())
-
-        self.ax.scatter(lmd, phi, **marker)
-        self.ax.set_xlabel('$\lambda, °$')
-        self.ax.set_ylabel('$\phi, °$')
-        
-        for i in range(len(lmd)):
-            plt.annotate(text[i], (lmd[i], phi[i] + 2))
-
-        self.ax.set_title(f'{datetime.now()}')
-
     def show(self):
         plt.show()
 
@@ -184,6 +169,11 @@ class Parser:
             dict_['deltaT2'] = float(dict_['deltaT2'])
             dict_['nl'] = int(dict_['nl'])
             dict_['deltaT'] = float(dict_['deltaT'])
+            
+            date = dict_['datetime']
+            day, month, year = date.split('.')
+            year = '20' + year
+            dict_['datetime'] = '.'.join([day, month, year])
 
             result[dict_.pop('ns')] = dict_
     
@@ -225,8 +215,4 @@ class Parser:
 
 
 if __name__=='__main__':
-    parser = Parser()
-    # print(parser.parse_data())
-    grapher = Grapher(custom_rcParams, None)
-    grapher.current_position()
-    grapher.show()
+    ...
