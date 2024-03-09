@@ -71,12 +71,17 @@ class Grapher:
             self.ax.set_ylim(-40000, 40000)
             self.ax.set_zlim(-40000, 40000)
             self.ax.set_aspect('equal', adjustable='box')
-        else: 
-            lmd, phi = zip(*data)
-            lmd = list(map(lambda x: x.decimal, lmd))
-            phi = list(map(lambda x: x.decimal, phi))
+        else:
+            try:
+                lmd, phi = zip(*data)
+                lmd = list(map(lambda x: x.decimal, lmd))
+                phi = list(map(lambda x: x.decimal, phi))
+            except TypeError:
+                lmd, phi = data
+                lmd = lmd.decimal
+                phi = phi.decimal
 
-            self.ax.scatter(lmd, phi, **marker)
+            self.ax.scatter(lmd, phi, **kwargs)
             self.ax.set_xlabel('$\lambda, °$')
             self.ax.set_ylabel('$\phi, °$')
         self.fig.suptitle(kwargs.get('title', ''))

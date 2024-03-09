@@ -1,6 +1,5 @@
 from datetime import datetime
 from math import sqrt, tan
-from matplotlib import pyplot as plt
 import numpy as np
 
 from config import *
@@ -106,27 +105,28 @@ class GLONASS:
     Система глобального позиционирования
     '''
     def __init__(self):
-        self.__parser = Parser()
-        self.__grapher = Grapher(custom_rcParams, None)
-        self.data = self.__parser.parse_data()
+        self._parser = Parser()
+        self.data = self._parser.parse_data()
 
     def current_position(self, **kwargs):
         '''
-        Положение спутников в настоящий момент времени
+        Положение спутников в настоящий момент времени (по данным https://glonass-iac.ru/glonass/)
         '''
-        result = self.__parser.get_current_position()
+        grapher = Grapher(custom_rcParams, None)
+        
+        result = self._parser.get_current_position()
         lmd, phi = zip(*result.values())
         text = list(result.keys())
 
-        self.__grapher.ax.scatter(lmd, phi, **marker)
-        self.__grapher.ax.set_xlabel('$\lambda, °$')
-        self.__grapher.ax.set_ylabel('$\phi, °$')
+        grapher.ax.scatter(lmd, phi, **marker)
+        grapher.ax.set_xlabel('$\lambda, °$')
+        grapher.ax.set_ylabel('$\phi, °$')
         
         for i in range(len(lmd)):
-            self.__grapher.ax.annotate(text[i], (lmd[i], phi[i] + 2))
+            grapher.ax.annotate(text[i], (lmd[i], phi[i] + 2))
 
-        self.__grapher.ax.set_title(f'{datetime.now()}')
-        self.__grapher.show()
+        grapher.ax.set_title(f'{datetime.now()}')
+        grapher.show()
 
     def __get_elems(self, H_omega: float, data: dict) -> tuple[float]:
         ecc = data['e']
@@ -159,17 +159,18 @@ class GLONASS:
                 'Omega': Omega,
                 'w': data['W'],
                 'M_omega': M_omega,
+                'JD_omega': JD_omega,
                 'date': date,
             }
         return parameters
 
-    def get_satellites(self, time) -> list[Satellite]:
+    def get_satellites(self, time: str) -> list[Satellite]:
         JD0 = Math.get_JD(time)
         parameters = self.get_sat_elements()
 
         sats = []
         for sat in parameters:
-            JD_omega = Math.get_JD(parameters[sat]['date'])
+            JD_omega = parameters[sat]['JD_omega']
 
             dt = (JD0 - JD_omega) * 86400
             n = 2 * np.pi / parameters[sat]['T']
@@ -179,19 +180,48 @@ class GLONASS:
             sats.append(satellite)
         return sats
             
-    def get_position(self, time) -> list[Satellite]:
+    def get_positions(self, time: str) -> list[Satellite]:
         sats = self.get_satellites(time)
+        grapher = Grapher(custom_rcParams, projection=None)
 
-        coords = []
         for sat in sats:
-            coords.append(sat.route(time))
-        
-        return coords
+            geo_coords = Math.get_lmd_phi(sat.coords)
+            grapher.print(geo_coords, c='red')
+            grapher.ax.annotate(int(sat.type), (geo_coords[0].decimal, 
+                                           geo_coords[1].decimal + 2))
+        grapher.show() 
 
+    def get_routes(self, time: str) -> list[Satellite]:
+        sats = self.get_satellites(time)
+        grapher = Grapher(custom_rcParams, projection=None)
+
+        for sat in sats:
+            route = sat.route(time)
+            initial_position = route[0]
+            
+            grapher.print(initial_position, c='red')
+            grapher.ax.annotate(int(sat.type), (initial_position[0].decimal, 
+                                           initial_position[1].decimal + 2))
+            grapher.print(route, s=1, c='k')
+        grapher.show() 
     
-# position = GLONASS().get_position('03.03.2024 15:17')
-# grapher = Grapher(custom_rcParams, None)
-# for arr in position:
-#     grapher.print(arr)
-# grapher.show()
-# GLONASS().current_position()
+    def get_orbits(self, time: str):
+        sats = self.get_satellites(time)
+        earth = Earth(EARTH_PATH)
+        grapher = Grapher(custom_rcParams, projection='3d')
+        for sat in sats:
+            evolution = np.array(list(sat.evolution())).T
+            coords = np.array(list(sat.coords)).T
+            
+            grapher.print(evolution, c='black')
+            grapher.print(earth.coords.T, c='royalblue')
+            grapher.print(coords, c='red', s=10)
+
+        grapher.show()
+
+
+g = GLONASS()
+g.current_position()
+g.get_positions('09.03.2024 10:39')
+# g.get_routes('09.03.2024 14:43')
+# g.get_orbits('08.03.2024 19:34')
