@@ -58,6 +58,11 @@ class Grapher:
         self.ax = self.fig.add_subplot(1, 1, 1, projection=projection)
 
     def print(self, data, **kwargs):
+        if kwargs.get('title'):
+            title = kwargs.pop('title')
+        else: 
+            title = ''
+
         if self.projection == '3d':
             try:
                 self.ax.plot(data[0, :], data[1, :], data[2, :], **kwargs)
@@ -81,10 +86,11 @@ class Grapher:
                 lmd = lmd.decimal
                 phi = phi.decimal
 
+            # self.ax.set_xlim(-180, 180)
             self.ax.scatter(lmd, phi, **kwargs)
             self.ax.set_xlabel('$\lambda, °$')
             self.ax.set_ylabel('$\phi, °$')
-        self.fig.suptitle(kwargs.get('title', ''))
+        self.fig.suptitle(title)
 
     @staticmethod
     def __update(N, data, line, point):
@@ -188,10 +194,7 @@ class Parser:
         '''
         Основная функция для парсинга данных с сайта
         '''
-        timezone_offset = -7
-        tzinfo = timezone(timedelta(hours=timezone_offset))
-
-        path = f'files/{datetime.now(tz=tzinfo).date()}.json'
+        path = f'files/{datetime.now().date()}.json'
         if not os.path.exists(path):
             response = self.get_response(self.url)
             data = response.json()

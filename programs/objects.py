@@ -145,7 +145,7 @@ class GLONASS:
         '''
         parameters = {}
         for satellite, data in self.data.items():
-            date = f'{data["datetime"]} 00:00'
+            date = f'{data["datetime"]} 00:00:00'
             JD = Math.get_JD(date) - 3/24
             JD_omega = JD + data['Tomega']/86400
             H_omega = Math.sid2000(JD_omega)
@@ -187,6 +187,7 @@ class GLONASS:
         for sat in sats:
             geo_coords = Math.get_lmd_phi(sat.coords)
             grapher.print(geo_coords, c='red')
+            grapher.ax.set_title(time)
             grapher.ax.annotate(int(sat.type), (geo_coords[0].decimal, 
                                            geo_coords[1].decimal + 2))
         grapher.show() 
@@ -221,7 +222,7 @@ class GLONASS:
 
 
 g = GLONASS()
-g.current_position()
-g.get_positions('09.03.2024 10:39')
-# g.get_routes('09.03.2024 14:43')
-# g.get_orbits('08.03.2024 19:34')
+# g.current_position()
+# g.get_positions('14.03.2024 11:58:04')
+g.get_routes('14.03.2024 11:58:04')
+# g.get_orbits('14.03.2024 10:16:34')

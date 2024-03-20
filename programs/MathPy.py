@@ -135,8 +135,8 @@ class Math:
         '''
         date, time = date.split()
         day, month, year = map(int, date.split('.'))
-        hour, min = map(int, time.split(':'))
-        day += (hour + min/60)/24
+        hour, min, sec = map(int, time.split(':'))
+        day += (hour + min/60 + sec/3600)/24
         return (year, month, day)
     
     class Triangulate:
