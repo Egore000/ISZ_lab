@@ -4,7 +4,7 @@ import numpy as np
 
 from config import *
 from mechanics import Mechanics, Earth
-from MathPy import Math
+from MathPy import Math, Triangulate
 from tools import Parser, Filer, Grapher
 
 
@@ -224,5 +224,5 @@ class GLONASS:
 g = GLONASS()
 # g.current_position()
 # g.get_positions('14.03.2024 11:58:04')
-g.get_routes('14.03.2024 11:58:04')
+# g.get_routes('14.03.2024 11:58:04')
 # g.get_orbits('14.03.2024 10:16:34')

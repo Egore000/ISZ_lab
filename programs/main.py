@@ -3,7 +3,7 @@ import numpy as np
 from config import *
 from tools import Filer, Grapher, Parser
 from mechanics import Mechanics
-from MathPy import Math
+from MathPy import Math, Triangulate
 from objects import Satellite, Earth, Sun, Moon, Point
 
 
@@ -74,7 +74,7 @@ def triangulation():
     delta1 = Angles(decimal=34.908846560020685)
     delta2 = Angles(decimal=-28.159853782057976)
 
-    triang = Math.Triangulate(point1, point2,
+    triang = Triangulate.Triangulate(point1, point2,
                             gamma1, delta1, 
                             gamma2, delta2)
     (x1, y1, z1), (x2, y2, z2) = triang.get_coords()
@@ -94,4 +94,5 @@ if __name__=="__main__":
 
     # disturb()
 
-    triangulation()
+    # triangulation()
+    ...
