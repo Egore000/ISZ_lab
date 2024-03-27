@@ -2,7 +2,7 @@ import numpy as np
 
 from config import *
 from tools import Filer, Grapher, Parser
-from objects import Satellite, Earth
+from objects import Satellite, Earth, GLONASS
 
 
 def orbit(type: str):
@@ -36,12 +36,19 @@ def animation(type: str):
     grapher = Grapher(projection='3d')
     grapher.animation(satellite, earth, save=0, title='Резонанс')
 
+def glonass():
+    g = GLONASS()
+    # g.current_position()
+    g.get_positions('27.03.2024 08:19:40')
+    # g.get_routes('14.03.2024 11:58:04')
+    # g.get_orbits('14.03.2024 10:16:34')
 
 
 if __name__=="__main__":
-    route('Тестовый')
-    orbit('Тестовый')
-    animation('Тестовый')
-    route('Геостационарный')
-    orbit('Геостационарный')
-    animation('Геостационарный')
+    # route('Тестовый')
+    # orbit('Тестовый')
+    # animation('Тестовый')
+    # route('Геостационарный')
+    # orbit('Геостационарный')
+    # animation('Геостационарный')
+    glonass()

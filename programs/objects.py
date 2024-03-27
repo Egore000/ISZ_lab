@@ -221,7 +221,7 @@ class GLONASS:
         grapher.show()
 
 
-g = GLONASS()
+# g = GLONASS()
 # g.current_position()
 # g.get_positions('14.03.2024 11:58:04')
 # g.get_routes('14.03.2024 11:58:04')

@@ -132,7 +132,7 @@ def satellite_leveling():
 
 
 if __name__=="__main__":
-    disturb()
-    triangulation()
-    get_recieve_coords()
+    # disturb()
+    # triangulation()
+    # get_recieve_coords()
     satellite_leveling()
