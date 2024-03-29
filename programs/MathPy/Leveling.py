@@ -3,6 +3,7 @@ from GeoPY import krasovsky
 a = krasovsky.a
 b = krasovsky.b
 
+
 class Leveling:
     def __init__(self, xs, ys, zs):
         self.xs = xs
@@ -27,10 +28,10 @@ class Leveling:
         return (x/a)**2 + (y/a)**2 + (z/b)**2 - 1
 
     @staticmethod
-    def _df(x, y, z, 
-        dx, dy, dz):
+    def _df(x, y, z,
+            dx, dy, dz):
         '''f'(lmd)'''
-        return 2 * (x*dx / a**2 + y*dy / a**2 + z*dz / b**2) 
+        return 2 * (x*dx / a**2 + y*dy / a**2 + z*dz / b**2)
 
     def Newton_method(self, eps=1e-6):
         lmd = 0

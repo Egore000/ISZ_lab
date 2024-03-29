@@ -6,13 +6,15 @@ from AnglesPy import Angles
 from . import Math
 from mechanics import Mechanics
 
+
 class Triangulate:
     '''
     Класс для работы с методами триангуляции
     '''
-    def __init__(self, point1, point2, 
-                gamma1: Angles, delta1: Angles,
-                gamma2: Angles, delta2: Angles):
+
+    def __init__(self, point1, point2,
+                 gamma1: Angles, delta1: Angles,
+                 gamma2: Angles, delta2: Angles):
         self.point1 = point1
         self.point2 = point2
         self.g1 = gamma1
@@ -57,37 +59,40 @@ class Triangulate:
         return (x1, y1, z1), (x2, y2, z2)
 
 
-def _Fx(X: float, 
-        x: list[float], 
+def _Fx(X: float,
+        x: list[float],
         rho: list[float],
         delta: list[float]) -> float:
-    
     '''F_x'''
     sum = 0
     for i in range(len(x)):
         sum += delta[i] * (X - x[i]) / rho[i]
     return 2 * sum
 
+
 def _Ft(delta: list[float]) -> float:
     '''F_t'''
     return -2 * Mechanics.c * sum(delta)
 
+
 def dF_diagonal(X: float,
-         x: list[float],
-         rho: list[float],
-         delta: list[float]) -> float:
-    
+                x: list[float],
+                rho: list[float],
+                delta: list[float]) -> float:
+
     sum = 0
     for i in range(len(x)):
-        sum += ( (X - x[i])**2 + delta[i] * (rho[i] - (X - x[i])**2 / rho[i]) ) / rho[i]**2
+        sum += ((X - x[i])**2 + delta[i] *
+                (rho[i] - (X - x[i])**2 / rho[i])) / rho[i]**2
 
     return 2 * sum
+
 
 def dF_xy(XY: list[float],
           xy: list[list[float]],
           rho: list[float],
           delta: list[float]) -> float:
-    
+
     X, Y = XY
     x, y = xy
 
@@ -104,7 +109,7 @@ def dF_xt(X: float,
     sum = 0
     for i in range(len(x)):
         sum += (X - x[i]) / rho[i]
-    
+
     return -2 * Mechanics.c * sum
 
 
@@ -112,7 +117,7 @@ def F(XYZ: list[float],
       xyz: list[list[float]],
       rho: list[float],
       delta: list[float]) -> npt.NDArray:
-    
+
     X, Y, Z, _ = XYZ
     x, y, z = xyz
 
@@ -122,53 +127,54 @@ def F(XYZ: list[float],
         _Fx(X=Z, x=z, rho=rho, delta=delta),
         _Ft(delta=delta)
     ]
-    return np.array(lst) 
+    return np.array(lst)
 
 
 def dF(XYZ: list[float],
        xyz: list[list[float]],
        rho: list[float],
        delta: list[float]) -> npt.NDArray:
-    
+
     X, Y, Z, _ = XYZ
     x, y, z = xyz
 
     params = {
         'rho': rho,
-        'delta': delta         
+        'delta': delta
     }
 
     matrix = np.array([
         [
-            dF_diagonal(X=X, x=x, **params),  
-            dF_xy(XY=(X, Y), xy=[x, y], **params), 
+            dF_diagonal(X=X, x=x, **params),
+            dF_xy(XY=(X, Y), xy=[x, y], **params),
             dF_xy(XY=(X, Z), xy=[x, z], **params),
-            dF_xt(X=X, x=x, rho=rho)   
+            dF_xt(X=X, x=x, rho=rho)
         ],
         [
-            dF_xy(XY=(X, Y), xy=[x, y], **params), 
-            dF_diagonal(X=Y, x=y, **params),  
+            dF_xy(XY=(X, Y), xy=[x, y], **params),
+            dF_diagonal(X=Y, x=y, **params),
             dF_xy(XY=(Y, Z), xy=[y, z], **params),
-            dF_xt(X=Y, x=y, rho=rho)   
+            dF_xt(X=Y, x=y, rho=rho)
         ],
         [
-            dF_xy(XY=(X, Z), xy=[x, z], **params), 
+            dF_xy(XY=(X, Z), xy=[x, z], **params),
             dF_xy(XY=(Y, Z), xy=[y, z], **params),
-            dF_diagonal(X=Z, x=z, **params),  
-            dF_xt(X=Z, x=z, rho=rho)   
-        ],   
+            dF_diagonal(X=Z, x=z, **params),
+            dF_xt(X=Z, x=z, rho=rho)
+        ],
         [
             dF_xt(X=X, x=x, rho=rho),
-            dF_xt(X=Y, x=y, rho=rho),  
-            dF_xt(X=Z, x=z, rho=rho),  
+            dF_xt(X=Y, x=y, rho=rho),
+            dF_xt(X=Z, x=z, rho=rho),
             2 * len(x) * Mechanics.c**2
         ]
     ])
     return matrix
 
+
 def get_rho(XYZ: list[float],
             xyz: list[list[float]]) -> list[float]:
-    
+
     X, Y, Z, _ = XYZ
     lst = []
     for item in xyz:

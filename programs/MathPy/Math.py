@@ -40,12 +40,12 @@ def LPnm(n: int, m: int, z: float) -> float:
     if not -1 <= z <= 1:
         raise ValueError('z is not between -1 and 1')
     if m == 0 and n < 2:
-        if n == 0: 
+        if n == 0:
             return 1
-        elif n == 1: 
+        elif n == 1:
             return z
     elif m == n:
-        return (2*n - 1) *  np.sqrt(1 - z**2) * LPnm(n-1, n-1, z)
+        return (2*n - 1) * np.sqrt(1 - z**2) * LPnm(n-1, n-1, z)
     else:
         if n - 1 < m:
             return 0
@@ -74,7 +74,7 @@ def get_lmd_phi(args: tuple[float]) -> tuple[float]:
     lmd = Angles(rad=np.arctan2(y, x))
     phi = Angles(rad=np.arctan(z / np.sqrt(x**2 + y**2)))
     return (lmd, phi)
-    
+
 
 def radius(args: tuple[float]) -> float:
     '''Радиус-вектор'''
@@ -93,7 +93,8 @@ def sid2000(jd: float) -> float:
     d = jd - m - jd2000
     t = (d + m)/jdyear
     mm = m * 86400
-    s = (24110.54841 + mm + 236.555367908 * (d + m) + (0.093104 * t - 6.21E-6 * t**2) * t) / 86400 * 2*np.pi
+    s = (24110.54841 + mm + 236.555367908 * (d + m) +
+         (0.093104 * t - 6.21E-6 * t**2) * t) / 86400 * 2*np.pi
     return s
 
 
@@ -102,7 +103,7 @@ def get_JD(date: str) -> float:
     Вычисление юлианской даты
     '''
     year, month, day = get_daytime(date)
-    
+
     date = year + month/100 + day/1e4
     i = int(date)
     m1 = (date - i) * 100
@@ -112,7 +113,7 @@ def get_JD(date: str) -> float:
         i -= 1
         me += 12
     jd = int(365.25 * i) + int(30.6001 * (me + 1)) + d + 1720994.5
-    
+
     if date < 1582.1015:
         return jd
     ja = int(i/100)

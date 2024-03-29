@@ -3,7 +3,7 @@ import numpy as np
 
 from AnglesPy import Angles
 from MathPy import Math
-from config import * 
+from config import *
 from tools import Filer
 
 
@@ -11,9 +11,9 @@ class Earth:
     Mass = 2e24
     Radius = 6378
     fm = 398600.5
+
     def __init__(self, file: str):
         self.coords = Filer.read(file)
-
 
 
 class Mechanics:
@@ -23,6 +23,7 @@ class Mechanics:
     w = 7.2922115e-5        # скорость среднего звёздного вращения Земли
     ae = 149_597_870.7      # km
     c = 299_792.458         # km/s
+
     def get_elements(self, coords: list, velocities: list):
         '''
         Переход от координат и скоростей к элементам орбиты
@@ -30,7 +31,7 @@ class Mechanics:
         Параметры::
         ------
             `coords` - массив координат
-        
+
             `velocities` - массив скоростей
 
         Выходные значения::
@@ -43,10 +44,10 @@ class Mechanics:
         r = Math.radius(coords)
         V2 = Math.radius(velocities)
         h = V2 / 2 - self.Mu / r
-        
+
         c1 = y * Vz - z * Vy
-        c2 = z * Vx - x * Vz 
-        c3 = x * Vy - y * Vx 
+        c2 = z * Vx - x * Vz
+        c3 = x * Vy - y * Vx
 
         l1 = -self.Mu * x/r + Vy * c3 - Vz * c2
         l2 = -self.Mu * y/r + Vz * c1 - Vx * c3
@@ -64,21 +65,26 @@ class Mechanics:
 
         Omega = np.arctan2(c1/(c*sin(i)), -c2/(c*sin(i)))
         w = np.arctan2(l3/(l*sin(i)), l1/l*cos(Omega) + l2/l*sin(Omega))
-        E0 = np.arctan2((x*Vx + y*Vy + z*Vz)/(ecc*sqrt(self.Mu*a)), (1-r/a)/ecc)
+        E0 = np.arctan2((x*Vx + y*Vy + z*Vz) /
+                        (ecc*sqrt(self.Mu*a)), (1-r/a)/ecc)
         M = E0 - ecc*sin(E0)
-        
+
         i, Omega, w, M = list(map(lambda x: Angles(rad=x), [i, Omega, w, M]))
         return (ecc, i, a, Omega, w, M)
-    
+
     @staticmethod
     def __get_parameters(satellite):
         '''Получение параметров'''
-        a1 = cos(satellite.w)*cos(satellite.Omega) - sin(satellite.w)*sin(satellite.Omega)*cos(satellite.i)
-        b1 = cos(satellite.w)*sin(satellite.Omega) + sin(satellite.w)*cos(satellite.Omega)*cos(satellite.i)
+        a1 = cos(satellite.w)*cos(satellite.Omega) - \
+            sin(satellite.w)*sin(satellite.Omega)*cos(satellite.i)
+        b1 = cos(satellite.w)*sin(satellite.Omega) + \
+            sin(satellite.w)*cos(satellite.Omega)*cos(satellite.i)
         c1 = sin(satellite.w)*sin(satellite.i)
 
-        a2 = -sin(satellite.w)*cos(satellite.Omega) - cos(satellite.w)*sin(satellite.Omega)*cos(satellite.i)
-        b2 = -sin(satellite.w)*sin(satellite.Omega) + cos(satellite.w)*cos(satellite.Omega)*cos(satellite.i)
+        a2 = -sin(satellite.w)*cos(satellite.Omega) - \
+            cos(satellite.w)*sin(satellite.Omega)*cos(satellite.i)
+        b2 = -sin(satellite.w)*sin(satellite.Omega) + \
+            cos(satellite.w)*cos(satellite.Omega)*cos(satellite.i)
         c2 = cos(satellite.w)*sin(satellite.i)
 
         return (a1, b1, c1), (a2, b2, c2)
@@ -93,8 +99,8 @@ class Mechanics:
             E = M + satellite.e * sin(E0)
             dif = E - E0
             E0 = E
-        return E 
-    
+        return E
+
     @staticmethod
     def get_orbital_coords(satellite, t: float):
         '''Вычисление орбитальных координат и скоростей спутника `satellite`'''
@@ -104,10 +110,11 @@ class Mechanics:
         eta = satellite.a * sqrt(1 - satellite.e**2) * sin(E)
 
         Vxi = -satellite.a * satellite.n * sin(E)/(1 - satellite.e * cos(E))
-        Veta = satellite.a * satellite.n * sqrt(1 - satellite.e**2) * cos(E)/(1 - satellite.e * cos(E))
+        Veta = satellite.a * satellite.n * \
+            sqrt(1 - satellite.e**2) * cos(E)/(1 - satellite.e * cos(E))
 
         return (xi, eta), (Vxi, Veta)
-    
+
     @staticmethod
     def get_coords(satellite, t: float):
         '''Вычисление координат спутника `satellite`'''
@@ -119,9 +126,9 @@ class Mechanics:
         y = b1*xi + b2*eta
         z = c1*xi + c2*eta
 
-        Vx = a1*Vxi + a2*Veta 
-        Vy = b1*Vxi + b2*Veta 
-        Vz = c1*Vxi + c2*Veta 
+        Vx = a1*Vxi + a2*Veta
+        Vy = b1*Vxi + b2*Veta
+        Vz = c1*Vxi + c2*Veta
 
         return (x, y, z), (Vx, Vy, Vz)
 
@@ -129,19 +136,19 @@ class Mechanics:
     def transition(h: float, x):
         '''Переход во вращающуюся систему координат'''
         A = np.array([
-                    [cos(h), sin(h), 0], 
-                    [-sin(h), cos(h), 0],
-                    [0, 0, 1]
-                    ])
+            [cos(h), sin(h), 0],
+            [-sin(h), cos(h), 0],
+            [0, 0, 1]
+        ])
         return A @ x
-    
+
     @staticmethod
-    def geopotential(coords: tuple[float], 
+    def geopotential(coords: tuple[float],
                      n1: int, n2: int) -> float:
         '''
         Вычисление геопотенциала в заданной точке `coords` с учётом
         влияния гармоник геопотенциала 
-        
+
         `n1` - начальная гармоника
 
         `n2` - конечная гармоника
@@ -159,13 +166,12 @@ class Mechanics:
             for m in range(n + 1):
                 (Cnm, Snm) = coefs[(n, m)]
                 sum += (r0/r) ** (n + 1) * Math.Norm_LPnm(n, m, sin(phi))\
-                     * (Cnm * cos(m * lmd) + Snm * sin(m * lmd))
+                    * (Cnm * cos(m * lmd) + Snm * sin(m * lmd))
         return coef * sum
-    
+
     @staticmethod
     def TRS(satellite, H: float, t: float):
         x, v = Mechanics.get_coords(satellite, t)
         x = np.array(x)
         y = Mechanics.transition(H, x)
         return y
-
