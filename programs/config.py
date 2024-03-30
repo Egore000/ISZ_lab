@@ -1,6 +1,6 @@
 from AnglesPy import Angles
 
-date = '02.03.2024 11:00'
+date = '14.03.2024 11:58:04'
 
 parameters = {
     'Тестовый': {
@@ -25,7 +25,7 @@ parameters = {
 
 # graph parameters
 custom_rcParams = {
-    'font.size': 10,
+    'font.size': 14,
     'lines.linewidth': 0.7,
     'lines.color': 'black',
     'font.family': 'Times New Roman',
