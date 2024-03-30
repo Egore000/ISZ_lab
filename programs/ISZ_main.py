@@ -40,13 +40,13 @@ def animation(type: str):
     grapher.animation(satellite, earth, save=0, title='Резонанс')
 
 
-def glonass():
+def glonass(time):
     g = GLONASS()
-    # g.current_position()
-    g.get_positions('14.03.2024 11:58:04')
 
-    g.get_routes('14.03.2024 11:58:04')
-    # g.get_orbits('14.03.2024 10:16:34')
+    # g.current_position()
+    g.get_positions(time)
+    g.get_routes(time)
+    g.get_orbits(time)
 
 
 if __name__ == "__main__":
@@ -56,4 +56,4 @@ if __name__ == "__main__":
     # route('Геостационарный')
     # orbit('Геостационарный')
     # animation('Геостационарный')
-    glonass()
+    glonass('14.03.2024 11:58:04')

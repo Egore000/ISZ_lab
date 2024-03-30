@@ -1,6 +1,7 @@
 from datetime import datetime
 from math import sqrt, tan
 import numpy as np
+from loguru import logger
 
 from config import *
 from mechanics import Mechanics, Earth
@@ -48,7 +49,7 @@ class Satellite:
             yield np.array([x, y, z])
             t += dt
 
-    def route(self, date: str):
+    def route(self, date: str) -> list[tuple[Angles, Angles]]:
         '''
         Трасса спутника
         '''
@@ -65,7 +66,16 @@ class Satellite:
             H = H0 + Mechanics.w * t0
 
             y = Mechanics.TRS(self, H, t)
-            coords.append(Math.get_lmd_phi(y))
+            # coords.append(Math.get_lmd_phi(y))
+
+            lmd, phi = Math.get_lmd_phi(y)
+            lmd -= Angles(180)
+
+            if lmd < Angles(-180):
+                lmd += Angles(360)
+            
+            coords.append((lmd, phi))
+
             t += dt
         return coords
 
@@ -199,14 +209,14 @@ class GLONASS:
         grapher = Grapher(custom_rcParams, projection=None)
 
         for sat in satellites:
-            # initial_position = Math.get_lmd_phi(sat.coords)
             route = sat.route(time)
             initial_position = route[0]
 
-            grapher.print(initial_position, c='red')
             grapher.ax.annotate(int(sat.type), (initial_position[0].decimal,
                                                 initial_position[1].decimal + 2))
             grapher.print(route, s=1, c='k')
+            grapher.print(initial_position, c='red')
+        
         grapher.ax.set_title(time)
         grapher.show()
 
