@@ -80,12 +80,15 @@ class Grapher:
         else:
             try:
                 lmd, phi = zip(*data)
-                lmd = list(map(lambda x: x.decimal, lmd))
-                phi = list(map(lambda x: x.decimal, phi))
+                if isinstance(lmd[0], Angles) and isinstance(phi[0], Angles):
+                    lmd = list(map(lambda x: x.decimal, lmd))
+                    phi = list(map(lambda x: x.decimal, phi))
+                    
             except TypeError:
                 lmd, phi = data
-                lmd = lmd.decimal
-                phi = phi.decimal
+                if isinstance(lmd, Angles) and isinstance(lmd, Angles):
+                    lmd = lmd.decimal
+                    phi = phi.decimal
 
             # self.ax.set_xlim(-180, 180)
             self.ax.scatter(lmd, phi, **kwargs)

@@ -73,7 +73,7 @@ class Satellite:
 
             if lmd < Angles(-180):
                 lmd += Angles(360)
-            
+
             coords.append((lmd, phi))
 
             t += dt
@@ -216,22 +216,66 @@ class GLONASS:
                                                 initial_position[1].decimal + 2))
             grapher.print(route, s=1, c='k')
             grapher.print(initial_position, c='red')
-        
+
         grapher.ax.set_title(time)
         grapher.show()
 
     def get_orbits(self, time: str):
+        satellite = Satellite(type='Геостационарный')
+
+        jd = Math.get_JD(time)
+        t = jd * 86400
+
+        satellite.coords, _ = Mechanics.get_coords(satellite, t)
+
         satellites = self.get_satellites(time)
         earth = Earth(EARTH_PATH)
         grapher = Grapher(custom_rcParams, projection='3d')
+
+        grapher.ax.scatter(satellite.coords[0], satellite.coords[1], c='red')
         for sat in satellites:
             evolution = np.array(list(sat.evolution())).T
             coords = np.array(list(sat.coords)).T
 
             grapher.print(evolution, c='black')
-            grapher.print(earth.coords.T, c='royalblue')
             grapher.print(coords, c='red', s=10)
+
+        grapher.print(earth.coords.T, c='royalblue')
         grapher.ax.set_title(time)
+        grapher.show()
+
+    def _set_params(self, grapher, title):
+        grapher.ax.set_title(title)
+        grapher.ax.set_xlim(-50000, 50000)
+        grapher.ax.set_ylim(-50000, 50000)
+        grapher.ax.set_xlabel('$\it{y}$, км')
+        grapher.ax.set_ylabel('$\it{z}$, км')
+        grapher.ax.set_aspect('equal', adjustable='box')
+        
+
+
+    def visibility_areas(self, time: str):
+        satellite = Satellite(type='Геостационарный')
+
+        jd = Math.get_JD(time)
+        t = jd * 86400
+
+        satellite.coords, _ = Mechanics.get_coords(satellite, t)
+
+        satellites = self.get_satellites(time)
+        earth = Earth(EARTH_PATH)
+        grapher = Grapher(custom_rcParams, projection=None)
+
+        grapher.print(earth.coords[:, 1:], c='royalblue')
+        for sat in satellites:
+            x, y, z = sat.coords
+
+            grapher.print((y, z), c='black')
+            grapher.ax.annotate(int(sat.type), (y, z + 2))
+
+        grapher.print(satellite.coords[1:], c='red')
+
+        self._set_params(grapher, time)
         grapher.show()
 
 
@@ -240,3 +284,4 @@ class GLONASS:
 # g.get_positions('14.03.2024 11:58:04')
 # g.get_routes('14.03.2024 11:58:04')
 # g.get_orbits('14.03.2024 10:16:34')
+# g.visibility_areas(date)

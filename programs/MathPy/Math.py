@@ -133,3 +133,16 @@ def get_daytime(date: str) -> tuple[int, int, float]:
     hour, min, sec = map(int, time.split(':'))
     day += (hour + min/60 + sec/3600)/24
     return (year, month, day)
+
+
+def get_perpendicular(satellite1, satellite2) -> float:
+    x12 = satellite1.coords[0] - satellite2.coords[0]
+    y12 = satellite1.coords[1] - satellite2.coords[1]
+    z12 = satellite1.coords[2] - satellite2.coords[2]
+
+    r12 = radius((x12, y12, z12))
+
+    r1 = radius(satellite1.coords)
+    r2 = radius(satellite2.coords)
+
+    return np.sqrt((2 * r12 * r1)**2 - (r12**2 + r1**2 - r2**2)**2) / (2 * r12)

@@ -4,6 +4,7 @@ from config import *
 from MathPy import Math
 from tools import Filer, Grapher, Parser
 from objects import Satellite, Earth, GLONASS
+from mechanics import Mechanics
 
 
 def orbit(type: str):
@@ -49,6 +50,31 @@ def glonass(time):
     g.get_orbits(time)
 
 
+def visibility_range(time):
+    glonass = GLONASS()
+
+    jd = Math.get_JD(time)
+    t = jd * 86400
+
+    geo = Satellite(type='Геостационарный')
+    geo.coords, _ = Mechanics.get_coords(geo, t)
+
+    satellites = glonass.get_satellites(time)
+
+    in_zone = []
+    for sat in satellites:
+        R = Math.get_perpendicular(sat, geo)
+
+        print(sat.type, R)
+
+        if R > Earth.Radius:
+            in_zone.append(sat.type)
+
+    print(in_zone)
+    glonass.visibility_areas(time)
+    # glonass.get_orbits(time)
+
+
 if __name__ == "__main__":
     # route('Тестовый')
     # orbit('Тестовый')
@@ -56,4 +82,5 @@ if __name__ == "__main__":
     # route('Геостационарный')
     # orbit('Геостационарный')
     # animation('Геостационарный')
-    glonass('14.03.2024 11:58:04')
+    # glonass(date)
+    visibility_range(date)

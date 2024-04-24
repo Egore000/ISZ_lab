@@ -9,7 +9,7 @@ from tools import Filer
 
 class Earth:
     Mass = 2e24
-    Radius = 6378
+    Radius = 6371
     fm = 398600.5
 
     def __init__(self, file: str):
