@@ -94,24 +94,25 @@ def is_satellite_in_visibility_range_for_observer(satellite: Satellite, observer
     h = np.arcsin(r_z / r)
     return h > np.pi/6
 
+
 def visibility_areas(time: str):
     def init_observer(lat, lon, height, time):
         observer = Observer(lat=lat, lon=lon, height=height)
         H = Math.get_sidereal_time(time)
         LST = observer.local_sidereal_time(sidereal_time=H)
         return observer, LST
-    
+
     lat0 = Angles()
     lon0 = Angles()
-    
+
     lat_Tomsk = Angles(56, 29, 19)
     lon_Tomsk = Angles(84, 57, 8)
-    
+
     height = 0
 
     observer0, LST0 = init_observer(lat0, lon0, height, time)
     observer_Tomsk, LST = init_observer(lat_Tomsk, lon_Tomsk, height, time)
-    
+
     h_min = Angles(30)
     Azimuth = [Angles(deg) for deg in range(1, 361)]
     a = 23047.00953687991
@@ -120,7 +121,7 @@ def visibility_areas(time: str):
     grapher = Grapher(custom_rcParams=custom_rcParams, projection=None)
     grapher.print(observer0.coords, c='green', s=100)
     grapher.print(observer_Tomsk.coords, c='red', s=100)
-    
+
     for Az in Azimuth:
         r_s = r * Math.cos(Az) * Math.cos(h_min)
         r_e = -r * Math.sin(Az) * Math.cos(h_min)
@@ -128,18 +129,21 @@ def visibility_areas(time: str):
 
         r_sez = np.array([r_s, r_e, r_z])
 
-        r0 = Mechanics.from_HTS_to_CRS(vector=r_sez, local_sidereal_time=LST0, lat=observer0._lat)
-        r_Tomsk = Mechanics.from_HTS_to_CRS(vector=r_sez, local_sidereal_time=LST, lat=observer_Tomsk._lat)
-        
+        r0 = Mechanics.from_HTS_to_CRS(
+            vector=r_sez, local_sidereal_time=LST0, lat=observer0._lat)
+        r_Tomsk = Mechanics.from_HTS_to_CRS(
+            vector=r_sez, local_sidereal_time=LST, lat=observer_Tomsk._lat)
+
         lmd0, phi0 = Mechanics.from_CRS_to_TRS(vector=r0, time=time)
-        lmd_Tomsk, phi_Tomsk = Mechanics.from_CRS_to_TRS(vector=r_Tomsk, time=time)
+        lmd_Tomsk, phi_Tomsk = Mechanics.from_CRS_to_TRS(
+            vector=r_Tomsk, time=time)
 
         grapher.print(data=(lmd0, phi0), c='green', s=1)
         grapher.print(data=(lmd_Tomsk, phi_Tomsk), c='red', s=1)
 
     glonass = GLONASS()
     sats = glonass.get_satellites(time)
-    
+
     vis0 = []
     vis_Tomsk = []
     for sat in sats:
@@ -147,19 +151,85 @@ def visibility_areas(time: str):
         grapher.print(coords, c='k', s=20)
         grapher.ax.annotate(int(sat.type), (coords[0].decimal,
                                             coords[1].decimal + 2))
-        
+
         if is_satellite_in_visibility_range_for_observer(sat, observer0, time):
             vis0.append(sat.type)
-        
+
         if is_satellite_in_visibility_range_for_observer(sat, observer_Tomsk, time):
             vis_Tomsk.append(sat.type)
 
     print(f'0 = {vis0}', f'Tomsk = {vis_Tomsk}', sep='\n')
-    
+
     grapher.ax.set_ylim(-90, 90)
     grapher.ax.set_xlim(-180, 180)
     grapher.show()
     return
+
+
+def trisection():
+    coords = np.array([
+        [  48853.4796304855, -1157502.1971707679, -229687.1713272969],
+        [  32862.01144554671,  157502.1971707679, -208608.9455096204],
+        [-167247.2391357287,  -158824.7863056938, -127309.0503967787]
+    ])
+    satellite = Satellite(type='Геостационарный')
+
+    rho = np.array([
+        Math.radius(np.array(satellite.coords) - coords[:: ,0]),
+        Math.radius(np.array(satellite.coords) - coords[::, 1]),
+        Math.radius(np.array(satellite.coords) - coords[::, 2]),
+    ])
+
+    x, y, z = 0, 0, 0
+
+    eps = 1e-9
+    dif = 1
+    iteration = 0
+    while dif >= eps:
+        iteration += 1
+
+        _x = coords[0, ::]
+        _y = coords[1, ::]
+        _z = coords[2, ::]
+
+        A = np.array([
+            [
+                (x - _x[0]) / rho[0],  
+                (y - _y[0]) / rho[0], 
+                (z - _z[0]) / rho[0]
+            ],
+            [
+                (x - _x[1]) / rho[1],
+                (y - _y[1]) / rho[1],
+                (z - _z[1]) / rho[1]
+            ],
+            [
+                (x - _x[2]) / rho[2],
+                (y - _y[2]) / rho[2],
+                (z - _z[2]) / rho[2]
+            ]
+        ])
+
+        xyz = np.array([x, y, z])
+        _rho = np.array([
+            Math.radius(xyz - coords[::, 0]),
+            Math.radius(xyz - coords[::, 1]),
+            Math.radius(xyz - coords[::, 2]),
+        ])
+
+        delta_rho = rho - _rho
+
+        delta_x = np.linalg.inv(A) @ delta_rho
+        xyz = xyz + delta_x
+        x, y, z = xyz
+
+        dif = Math.radius(delta_x)
+        
+    print(f'Координаты спутника: {satellite.coords}',
+        f'Полученные координаты: {x, y, z}', 
+        f'Количество итераций: {iteration}', 
+        sep='\n')
+    
 
 
 if __name__ == "__main__":
@@ -172,4 +242,5 @@ if __name__ == "__main__":
     # glonass(date)
     # visibility_range(date)
     # visibility_range_for_observer(date)
-    visibility_areas(date)
+    # visibility_areas(date)
+    trisection()
