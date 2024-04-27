@@ -66,7 +66,7 @@ def Norm_LPnm(n: int, m: int, z: float) -> float:
     return coef * LPnm(n, m, z)
 
 
-def get_lmd_phi(args: tuple[float]) -> tuple[float]:
+def get_lmd_phi(args: tuple[float]) -> tuple[Angles, Angles]:
     '''
     Вычисление географических координат по декартовым
     '''
@@ -146,3 +146,11 @@ def get_perpendicular(satellite1, satellite2) -> float:
     r2 = radius(satellite2.coords)
 
     return np.sqrt((2 * r12 * r1)**2 - (r12**2 + r1**2 - r2**2)**2) / (2 * r12)
+
+
+def get_sidereal_time(date: str) -> Angles:
+    _, _, day = get_daytime(date)
+
+    sidereal_time = (day - int(day)) / 24 * 360
+    
+    return Angles(decimal=sidereal_time)

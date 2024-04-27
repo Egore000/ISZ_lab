@@ -1,5 +1,5 @@
 from datetime import datetime
-from math import sqrt, tan
+from math import sqrt, tan, sin, cos
 import numpy as np
 from loguru import logger
 
@@ -35,6 +35,9 @@ class Satellite:
         self.orbital_coords, self.orbital_velocities = Mechanics.get_orbital_coords(
             self, t0)
         self.coords, self.velocities = Mechanics.get_coords(self, t0)
+
+        self.x, self.y, self.z = self.coords
+        self.Vx, self.Vy, self.Vz = self.velocities
 
     def __repr__(self):
         return repr(f'<Satellite: {self.type}>')
@@ -279,9 +282,30 @@ class GLONASS:
         grapher.show()
 
 
-# g = GLONASS()
-# g.current_position()
-# g.get_positions('14.03.2024 11:58:04')
-# g.get_routes('14.03.2024 11:58:04')
-# g.get_orbits('14.03.2024 10:16:34')
-# g.visibility_areas(date)
+class Observer:
+    def __init__(self, lat: Angles, lon: Angles, height: float):
+        self._lat = lat
+        self._lon = lon
+        self._h = height
+
+    @property
+    def coords(self) -> tuple[Angles, Angles]:
+        return (self._lon, self._lat)
+    
+    def coords_CRS(self, sidereal_time: Angles) -> tuple[float, float, float]:
+        return self._get_coords_CRS(sidereal_time)
+
+    def local_sidereal_time(self, sidereal_time: Angles) -> Angles:
+        return self._get_local_sidereal_time(sidereal_time)
+
+    def _get_coords_CRS(self, sidereal_time: Angles) -> tuple[float, float, float]:
+        H = self._get_local_sidereal_time(sidereal_time)
+
+        x = (Earth.Radius + self._h) * cos(self._lat) * cos(H)
+        y = (Earth.Radius + self._h) * cos(self._lat) * sin(H)
+        z = (Earth.Radius + self._h) * sin(self._lat)
+        
+        return (x, y, z)
+        
+    def _get_local_sidereal_time(self, sidereal_time: Angles) -> Angles:
+        return sidereal_time + self._lon

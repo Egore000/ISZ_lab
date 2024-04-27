@@ -1,5 +1,6 @@
 from math import sin, cos, sqrt, pi
 import numpy as np
+import numpy.typing as npt
 
 from AnglesPy import Angles
 from MathPy import Math
@@ -9,7 +10,7 @@ from tools import Filer
 
 class Earth:
     Mass = 2e24
-    Radius = 6371
+    Radius = 6378.1363
     fm = 398600.5
 
     def __init__(self, file: str):
@@ -23,6 +24,29 @@ class Mechanics:
     w = 7.2922115e-5        # скорость среднего звёздного вращения Земли
     ae = 149_597_870.7      # km
     c = 299_792.458         # km/s
+
+    @staticmethod
+    def rotation_matrix(axis: str, angle: Angles | float) -> npt.NDArray:
+        if axis in ('x', 'Ox'):
+            return np.array([
+                [1, 0, 0],
+                [0, cos(angle), -sin(angle)],
+                [0, sin(angle), cos(angle)]
+            ])
+
+        elif axis in ('y', 'Oy'):
+            return np.array([
+                [cos(angle), 0, sin(angle)],
+                [0, 1, 0],
+                [-sin(angle), 0, cos(angle)]
+            ])
+
+        elif axis in ('z', 'Oz'):
+            return np.array([
+                [cos(angle), sin(angle), 0],
+                [-sin(angle), cos(angle), 0],
+                [0, 0, 1]
+            ])
 
     def get_elements(self, coords: list, velocities: list):
         '''
@@ -135,11 +159,7 @@ class Mechanics:
     @staticmethod
     def transition(h: float, x):
         '''Переход во вращающуюся систему координат'''
-        A = np.array([
-            [cos(h), sin(h), 0],
-            [-sin(h), cos(h), 0],
-            [0, 0, 1]
-        ])
+        A = Mechanics.rotation_matrix('z', h)
         return A @ x
 
     @staticmethod
@@ -175,3 +195,36 @@ class Mechanics:
         x = np.array(x)
         y = Mechanics.transition(H, x)
         return y
+
+    @staticmethod
+    def HTS(vector: npt.NDArray, local_sidereal_time: Angles, lat: Angles) -> npt.NDArray:
+        H = local_sidereal_time
+
+        A = Mechanics.rotation_matrix('z', H)
+        M = Mechanics.rotation_matrix('y', Angles(90) - lat)
+
+        return M @ A @ vector
+
+    @staticmethod
+    def from_HTS_to_CRS(vector: npt.NDArray, local_sidereal_time: Angles, lat: Angles) -> npt.NDArray:
+        H = local_sidereal_time
+
+        A = Mechanics.rotation_matrix('z', H)
+        M = Mechanics.rotation_matrix('y', Angles(90) - lat)
+
+        return np.linalg.inv(A) @ np.linalg.inv(M) @ vector
+    
+    @staticmethod
+    def from_CRS_to_TRS(vector: npt.NDArray, time: str) -> tuple[Angles, Angles]:
+        jd = Math.get_JD(time) 
+        (_, _, t0) = Math.get_daytime(time)
+        t0 -= int(t0)
+        t0 *= 86400     # Юлианская дата
+
+        H0 = Math.sid2000(jd)
+        H = Angles(rad=H0 + Mechanics.w * t0)
+
+        trs = Mechanics.transition(H, vector)
+        return Math.get_lmd_phi(trs)
+
+

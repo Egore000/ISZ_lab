@@ -3,7 +3,7 @@ import numpy as np
 from config import *
 from MathPy import Math
 from tools import Filer, Grapher, Parser
-from objects import Satellite, Earth, GLONASS
+from objects import Satellite, Observer, Earth, GLONASS
 from mechanics import Mechanics
 
 
@@ -75,6 +75,93 @@ def visibility_range(time):
     # glonass.get_orbits(time)
 
 
+def is_satellite_in_visibility_range_for_observer(satellite: Satellite, observer: Observer, time: str) -> bool:
+    H = Math.get_sidereal_time(time)
+    LST = observer.local_sidereal_time(sidereal_time=H)
+    observer_x, observer_y, observer_z = observer.coords_CRS(sidereal_time=H)
+
+    r_xyz = np.array([
+        satellite.x - observer_x,
+        satellite.y - observer_y,
+        satellite.z - observer_z,
+    ])
+
+    r_sez = Mechanics.HTS(r_xyz, local_sidereal_time=LST, lat=observer._lat)
+    r_s, r_e, r_z = r_sez
+
+    r = Math.radius(r_sez)
+
+    h = np.arcsin(r_z / r)
+    return h > np.pi/6
+
+def visibility_areas(time: str):
+    def init_observer(lat, lon, height, time):
+        observer = Observer(lat=lat, lon=lon, height=height)
+        H = Math.get_sidereal_time(time)
+        LST = observer.local_sidereal_time(sidereal_time=H)
+        return observer, LST
+    
+    lat0 = Angles()
+    lon0 = Angles()
+    
+    lat_Tomsk = Angles(56, 29, 19)
+    lon_Tomsk = Angles(84, 57, 8)
+    
+    height = 0
+
+    observer0, LST0 = init_observer(lat0, lon0, height, time)
+    observer_Tomsk, LST = init_observer(lat_Tomsk, lon_Tomsk, height, time)
+    
+    h_min = Angles(30)
+    Azimuth = [Angles(deg) for deg in range(1, 361)]
+    a = 23047.00953687991
+    r = (Earth.Radius + np.sqrt(4 * a**2 - 3 * Earth.Radius**2)) / 2
+
+    grapher = Grapher(custom_rcParams=custom_rcParams, projection=None)
+    grapher.print(observer0.coords, c='green', s=100)
+    grapher.print(observer_Tomsk.coords, c='red', s=100)
+    
+    for Az in Azimuth:
+        r_s = r * Math.cos(Az) * Math.cos(h_min)
+        r_e = -r * Math.sin(Az) * Math.cos(h_min)
+        r_z = r * Math.sin(h_min)
+
+        r_sez = np.array([r_s, r_e, r_z])
+
+        r0 = Mechanics.from_HTS_to_CRS(vector=r_sez, local_sidereal_time=LST0, lat=observer0._lat)
+        r_Tomsk = Mechanics.from_HTS_to_CRS(vector=r_sez, local_sidereal_time=LST, lat=observer_Tomsk._lat)
+        
+        lmd0, phi0 = Mechanics.from_CRS_to_TRS(vector=r0, time=time)
+        lmd_Tomsk, phi_Tomsk = Mechanics.from_CRS_to_TRS(vector=r_Tomsk, time=time)
+
+        grapher.print(data=(lmd0, phi0), c='green', s=1)
+        grapher.print(data=(lmd_Tomsk, phi_Tomsk), c='red', s=1)
+
+    glonass = GLONASS()
+    sats = glonass.get_satellites(time)
+    
+    vis0 = []
+    vis_Tomsk = []
+    for sat in sats:
+        coords = Math.get_lmd_phi(sat.coords)
+        grapher.print(coords, c='k', s=20)
+        grapher.ax.annotate(int(sat.type), (coords[0].decimal,
+                                            coords[1].decimal + 2))
+        
+        if is_satellite_in_visibility_range_for_observer(sat, observer0, time):
+            vis0.append(sat.type)
+        
+        if is_satellite_in_visibility_range_for_observer(sat, observer_Tomsk, time):
+            vis_Tomsk.append(sat.type)
+
+    print(f'0 = {vis0}', f'Tomsk = {vis_Tomsk}', sep='\n')
+    
+    grapher.ax.set_ylim(-90, 90)
+    grapher.ax.set_xlim(-180, 180)
+    grapher.show()
+    return
+
+
 if __name__ == "__main__":
     # route('Тестовый')
     # orbit('Тестовый')
@@ -83,4 +170,6 @@ if __name__ == "__main__":
     # orbit('Геостационарный')
     # animation('Геостационарный')
     # glonass(date)
-    visibility_range(date)
+    # visibility_range(date)
+    # visibility_range_for_observer(date)
+    visibility_areas(date)
