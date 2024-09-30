@@ -8,9 +8,9 @@ from mechanics import Mechanics
 
 
 class Triangulate:
-    '''
+    """
     Класс для работы с методами триангуляции
-    '''
+    """
 
     def __init__(self, point1, point2,
                  gamma1: Angles, delta1: Angles,
@@ -30,6 +30,8 @@ class Triangulate:
         return (l, m, n)
 
     def get_coords(self) -> tuple[float]:
+        """Получение координат двух пунктов"""
+
         x1, y1, z1 = self.point1.coords
         x2, y2, z2 = self.point2.coords
 
@@ -63,7 +65,7 @@ def _Fx(X: float,
         x: list[float],
         rho: list[float],
         delta: list[float]) -> float:
-    '''F_x'''
+    """F_x"""
     sum = 0
     for i in range(len(x)):
         sum += delta[i] * (X - x[i]) / rho[i]
@@ -71,7 +73,7 @@ def _Fx(X: float,
 
 
 def _Ft(delta: list[float]) -> float:
-    '''F_t'''
+    """F_t"""
     return -2 * Mechanics.c * sum(delta)
 
 
@@ -139,8 +141,8 @@ def dF(XYZ: list[float],
     x, y, z = xyz
 
     params = {
-        'rho': rho,
-        'delta': delta
+        "rho": rho,
+        "delta": delta
     }
 
     matrix = np.array([

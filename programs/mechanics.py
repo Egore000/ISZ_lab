@@ -18,7 +18,10 @@ class Earth:
 
 
 class Mechanics:
-    '''Класс для работы с формулами из небесной механики'''
+    """
+    Класс для работы с формулами из небесной механики
+    """
+
     Mu = 3.986004418E5
     f = 6.67e-17            # H * km**2 / kg**2
     w = 7.2922115e-5        # скорость среднего звёздного вращения Земли
@@ -27,21 +30,22 @@ class Mechanics:
 
     @staticmethod
     def rotation_matrix(axis: str, angle: Angles | float) -> npt.NDArray:
-        if axis in ('x', 'Ox'):
+        """Матрица поворота"""
+        if axis in ("x", "Ox"):
             return np.array([
                 [1, 0, 0],
                 [0, cos(angle), -sin(angle)],
                 [0, sin(angle), cos(angle)]
             ])
 
-        elif axis in ('y', 'Oy'):
+        elif axis in ("y", "Oy"):
             return np.array([
                 [cos(angle), 0, sin(angle)],
                 [0, 1, 0],
                 [-sin(angle), 0, cos(angle)]
             ])
 
-        elif axis in ('z', 'Oz'):
+        elif axis in ("z", "Oz"):
             return np.array([
                 [cos(angle), sin(angle), 0],
                 [-sin(angle), cos(angle), 0],
@@ -49,7 +53,7 @@ class Mechanics:
             ])
 
     def get_elements(self, coords: list, velocities: list):
-        '''
+        """
         Переход от координат и скоростей к элементам орбиты
 
         Параметры::
@@ -61,7 +65,7 @@ class Mechanics:
         Выходные значения::
         ------
         `(ecc, i, a, Omega, w, M)`
-        '''
+        """
         x, y, z = coords
         Vx, Vy, Vz = velocities
 
@@ -98,7 +102,8 @@ class Mechanics:
 
     @staticmethod
     def __get_parameters(satellite):
-        '''Получение параметров'''
+        """Получение параметров"""
+
         a1 = cos(satellite.w)*cos(satellite.Omega) - \
             sin(satellite.w)*sin(satellite.Omega)*cos(satellite.i)
         b1 = cos(satellite.w)*sin(satellite.Omega) + \
@@ -115,7 +120,8 @@ class Mechanics:
 
     @staticmethod
     def anomaly(satellite, t: float):
-        '''Вычисление эксцентрической аномалии спутника `satellite`'''
+        """Вычисление эксцентрической аномалии спутника `satellite`"""
+
         M = satellite.n * (t - satellite.t0) + satellite.M0
         dif = 1
         E0 = M
@@ -127,7 +133,8 @@ class Mechanics:
 
     @staticmethod
     def get_orbital_coords(satellite, t: float):
-        '''Вычисление орбитальных координат и скоростей спутника `satellite`'''
+        """Вычисление орбитальных координат и скоростей спутника `satellite`"""
+
         E = Mechanics.anomaly(satellite, t)
 
         xi = satellite.a * (cos(E) - satellite.e)
@@ -141,7 +148,8 @@ class Mechanics:
 
     @staticmethod
     def get_coords(satellite, t: float):
-        '''Вычисление координат спутника `satellite`'''
+        """Вычисление координат спутника `satellite`"""
+
         (a1, b1, c1), (a2, b2, c2) = Mechanics.__get_parameters(satellite)
 
         (xi, eta), (Vxi, Veta) = Mechanics.get_orbital_coords(satellite, t)
@@ -158,21 +166,21 @@ class Mechanics:
 
     @staticmethod
     def transition(h: float, x):
-        '''Переход во вращающуюся систему координат'''
-        A = Mechanics.rotation_matrix('z', h)
+        """Переход во вращающуюся систему координат"""
+        A = Mechanics.rotation_matrix("z", h)
         return A @ x
 
     @staticmethod
     def geopotential(coords: tuple[float],
                      n1: int, n2: int) -> float:
-        '''
+        """
         Вычисление геопотенциала в заданной точке `coords` с учётом
         влияния гармоник геопотенциала 
 
         `n1` - начальная гармоника
 
         `n2` - конечная гармоника
-        '''
+        """
         r0 = Earth.Radius
         lmd, phi = Math.get_lmd_phi(coords)
         r = Math.radius(coords)
@@ -191,6 +199,7 @@ class Mechanics:
 
     @staticmethod
     def TRS(satellite, H: float, t: float):
+        """Координаты спутника во вращающейся системе координат"""
         x, v = Mechanics.get_coords(satellite, t)
         x = np.array(x)
         y = Mechanics.transition(H, x)
@@ -200,8 +209,8 @@ class Mechanics:
     def HTS(vector: npt.NDArray, local_sidereal_time: Angles, lat: Angles) -> npt.NDArray:
         H = local_sidereal_time
 
-        A = Mechanics.rotation_matrix('z', H)
-        M = Mechanics.rotation_matrix('y', Angles(90) - lat)
+        A = Mechanics.rotation_matrix("z", H)
+        M = Mechanics.rotation_matrix("y", Angles(90) - lat)
 
         return M @ A @ vector
 
@@ -209,8 +218,8 @@ class Mechanics:
     def from_HTS_to_CRS(vector: npt.NDArray, local_sidereal_time: Angles, lat: Angles) -> npt.NDArray:
         H = local_sidereal_time
 
-        A = Mechanics.rotation_matrix('z', H)
-        M = Mechanics.rotation_matrix('y', Angles(90) - lat)
+        A = Mechanics.rotation_matrix("z", H)
+        M = Mechanics.rotation_matrix("y", Angles(90) - lat)
 
         return np.linalg.inv(A) @ np.linalg.inv(M) @ vector
     

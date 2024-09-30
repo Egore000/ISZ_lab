@@ -5,9 +5,9 @@ from AnglesPy import Angles
 
 
 def factorial(x: int) -> int:
-    '''Вычисление факториала целого числа `x`'''
+    """Вычисление факториала целого числа `x`"""
     if not isinstance(x, int):
-        raise ValueError('n!: n must be int')
+        raise ValueError("n!: n must be int")
     result = 1
     for i in range(1, x):
         result *= i
@@ -15,14 +15,14 @@ def factorial(x: int) -> int:
 
 
 def LPn(n: int, z: float) -> float:
-    '''
+    """
     Функция Лежандра `Pn(z)`
     ```
     -1 <= z <= 1
     ```
-    '''
+    """
     if not -1 <= z <= 1:
-        raise ValueError('z must be in [-1, 1]')
+        raise ValueError("z must be in [-1, 1]")
     if n == 0:
         return 1
     if n == 1:
@@ -31,14 +31,14 @@ def LPn(n: int, z: float) -> float:
 
 
 def LPnm(n: int, m: int, z: float) -> float:
-    '''
+    """
     Присоединённая функция Лежандра `Pnm(z)`
     ```
     -1 <= z <= 1
     ```
-    '''
+    """
     if not -1 <= z <= 1:
-        raise ValueError('z is not between -1 and 1')
+        raise ValueError("z is not between -1 and 1")
     if m == 0 and n < 2:
         if n == 0:
             return 1
@@ -56,20 +56,20 @@ def LPnm(n: int, m: int, z: float) -> float:
 
 
 def Norm_LPnm(n: int, m: int, z: float) -> float:
-    '''
+    """
     Нормированная функция Лежандра 
     ```
     -1 <= z <= 1
     ```
-    '''
+    """
     coef = np.sqrt(2*n + 1) * np.sqrt(2 * factorial(n - m) / factorial(n + m))
     return coef * LPnm(n, m, z)
 
 
 def get_lmd_phi(args: tuple[float]) -> tuple[Angles, Angles]:
-    '''
+    """
     Вычисление географических координат по декартовым
-    '''
+    """
     (x, y, z) = args
     lmd = Angles(rad=np.arctan2(y, x))
     phi = Angles(rad=np.arctan(z / np.sqrt(x**2 + y**2)))
@@ -77,16 +77,16 @@ def get_lmd_phi(args: tuple[float]) -> tuple[Angles, Angles]:
 
 
 def radius(args: tuple[float]) -> float:
-    '''Радиус-вектор'''
+    """Радиус-вектор"""
     (x, y, z) = args
     return np.sqrt(x**2 + y**2 + z**2)
 
 
 def sid2000(jd: float) -> float:
-    '''
+    """
     Вычисление звёздного времени sid2000
         `jd` - юлианская дата
-    '''
+    """
     jd2000 = 2451545
     jdyear = 36525
     m = jd - int(jd) - 0.5
@@ -99,9 +99,8 @@ def sid2000(jd: float) -> float:
 
 
 def get_JD(date: str) -> float:
-    '''
-    Вычисление юлианской даты
-    '''
+    """Вычисление юлианской даты"""
+    
     year, month, day = get_daytime(date)
 
     date = year + month/100 + day/1e4
@@ -122,15 +121,15 @@ def get_JD(date: str) -> float:
 
 
 def get_daytime(date: str) -> tuple[int, int, float]:
-    '''
+    """
     Приведение даты в строков формате к виду `(year, month, day)`
         `year`: `int`
         `month`: `int`
         `day`: `float`
-    '''
+    """
     date, time = date.split()
-    day, month, year = map(int, date.split('.'))
-    hour, min, sec = map(int, time.split(':'))
+    day, month, year = map(int, date.split("."))
+    hour, min, sec = map(int, time.split(":"))
     day += (hour + min/60 + sec/3600)/24
     return (year, month, day)
 
@@ -149,6 +148,7 @@ def get_perpendicular(satellite1, satellite2) -> float:
 
 
 def get_sidereal_time(date: str) -> Angles:
+    """Звёздное время"""
     _, _, day = get_daytime(date)
 
     sidereal_time = (day - int(day)) / 24 * 360
