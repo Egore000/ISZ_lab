@@ -1,7 +1,10 @@
 from AnglesPy import Angles
 
+
+# Дата наблюдения
 date = '14.03.2024 11:58:04'
 
+# Параметры спутников
 parameters = {
     'Тестовый': {
         'a': 42169.14,
@@ -23,7 +26,7 @@ parameters = {
     }
 }
 
-# graph parameters
+# Параметры графиков
 custom_rcParams = {
     'font.size': 14,
     'lines.linewidth': 0.7,
@@ -33,12 +36,13 @@ custom_rcParams = {
     'mathtext.it': 'Times New Roman:italic',
 }
 
+# Параметры точек на графиках
 marker = {
     'c': 'k',
     's': 50,
     'marker': '.'
 }
 
-# file paths
+# Пути к файлам
 EARTH_PATH = 'files/Шар_м.DAT'
 COEFS = 'files/garm60.txt'

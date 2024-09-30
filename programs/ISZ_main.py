@@ -7,7 +7,13 @@ from objects import Satellite, Observer, Earth, GLONASS
 from mechanics import Mechanics
 
 
+__doc__ = """
+Задачи по исследованию динамики ИСЗ
+"""
+
 def orbit(type: str):
+    """Построение орбиты спутника в 3D"""
+
     earth = Earth(EARTH_PATH)
     satellite = Satellite(type=type, t0=0)
 
@@ -24,6 +30,8 @@ def orbit(type: str):
 
 
 def route(type: str):
+    """Построение трассы спутника"""
+
     satellite = Satellite(type=type)
     route = satellite.route(date)
     initial_coords = route[0]
@@ -35,13 +43,16 @@ def route(type: str):
 
 
 def animation(type: str):
+    """Анимированный полёт спутника вокруг Земли в 3D"""
+
     satellite = Satellite(type=type)
     earth = Earth(EARTH_PATH)
     grapher = Grapher(projection='3d')
-    grapher.animation(satellite, earth, save=0, title='Резонанс')
+    grapher.animation(satellite, earth, save=1, title='Резонанс')
 
 
 def glonass(time):
+    """Построение трасс и орбит спутников ГЛОНАСС"""
     g = GLONASS()
 
     # g.current_position()
@@ -51,6 +62,7 @@ def glonass(time):
 
 
 def visibility_range(time):
+    """Вычисление зон видимости спутников ГЛОНАСС"""
     glonass = GLONASS()
 
     jd = Math.get_JD(time)
@@ -76,6 +88,8 @@ def visibility_range(time):
 
 
 def is_satellite_in_visibility_range_for_observer(satellite: Satellite, observer: Observer, time: str) -> bool:
+    """Проверка видимости спутника из точки наблюдения"""
+
     H = Math.get_sidereal_time(time)
     LST = observer.local_sidereal_time(sidereal_time=H)
     observer_x, observer_y, observer_z = observer.coords_CRS(sidereal_time=H)
@@ -96,6 +110,8 @@ def is_satellite_in_visibility_range_for_observer(satellite: Satellite, observer
 
 
 def visibility_areas(time: str):
+    """Построение зон видимости"""
+
     def init_observer(lat, lon, height, time):
         observer = Observer(lat=lat, lon=lon, height=height)
         H = Math.get_sidereal_time(time)
@@ -167,6 +183,8 @@ def visibility_areas(time: str):
 
 
 def trisection():
+    """Определение координат спутника методом трисекции"""
+
     coords = np.array([
         [  48853.4796304855, -1157502.1971707679, -229687.1713272969],
         [  32862.01144554671,  157502.1971707679, -208608.9455096204],
@@ -223,6 +241,8 @@ def trisection():
         xyz = xyz + delta_x
         x, y, z = xyz
 
+        print(f'{iteration}: {x=} км    {y=} км    {z=} км')
+
         dif = Math.radius(delta_x)
         
     print(f'Координаты спутника: {satellite.coords}',
@@ -238,9 +258,8 @@ if __name__ == "__main__":
     # animation('Тестовый')
     # route('Геостационарный')
     # orbit('Геостационарный')
-    # animation('Геостационарный')
+    animation('Геостационарный')
     # glonass(date)
     # visibility_range(date)
-    # visibility_range_for_observer(date)
     # visibility_areas(date)
-    trisection()
+    # trisection()
